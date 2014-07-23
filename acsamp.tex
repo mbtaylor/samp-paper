@@ -301,7 +301,7 @@ avoid the additional complication of asynchronous processing.
 
 \subsection{Profile}
 
-Use of a SAMP Profile turns the Abstract API into a set of rules
+A particular SAMP Profile turns the Abstract API into a set of rules
 that a client can actually use to communicate with a running Hub,
 and hence with other clients.
 It performs two main jobs: first, it describes
@@ -364,10 +364,104 @@ of profiles is discouraged.
 
 \subsection{MTypes}
 
-% In this way the SAMP standard sidesteps questions about the nature of
-% messages.
-% 
-% All parameters by name, not by order.
+An MType (message type) is the description for a message with particular
+syntax and semantics.
+It is analogous to a function definition in an API,
+and consists of a labelling string (sometimes also known as the MType)
+along with
+a set of zero or more typed and named arguments,
+a set of zero or more typed and named return values,
+and some associated semantics indicating what the sender of such a
+message is trying to convey.
+
+A commonly used MType is ``{\tt image.load.fits}'',
+defined like this:
+\begin{quote}
+  {\em Name:\/} \\
+    \hspace*{1em} {\tt image.load.fits} \\
+  {\em Semantics:\/} \\
+    \hspace*{1em} Loads a 2-d FITS image \\
+  {\em Arguments:\/} \\
+    \hspace*{1em} {\tt url} (string): \\
+    \hspace*{2em} URL of the image to load \\
+    \hspace*{1em} {\tt image-id} (string, optional): \\
+    \hspace*{2em} Identifier for use in subsequent messages \\
+    \hspace*{1em} {\tt name} (string, optional): \\
+    \hspace*{2em} Name for labelling loaded image in UI \\
+  {\em Return Values:\/} \\
+    \hspace*{1em} None.
+\end{quote}
+
+The label is a short hierarchical string composed of atoms separated
+by the ``.'' character.
+As well as identifying to a recipient the type of an incoming message,
+it is used by clients to {\em subscribe\/} to messages, that is to
+indicate to the Hub which messages they are prepared to receive.
+For the purpose of subscription a limited wildcarding syntax is available,
+so by using the MType patterns
+``{\tt image.load.fits}'', ``{\tt image.*}'' or ``{\tt *}''
+a client may declare interest in only the above message,
+all image-related messages, or all messages respectively.
+
+In general, a callable client will only subscribe to those MTypes on which
+it can meaningfully act, so for instance an image analysis tool
+typically would subscribe to {\tt image.load.fits},
+but not to {\tt spectrum.load.ssa-generic}.
+A client that has an image FITS file to send can then
+either query the Hub for those clients subscribed to the image load
+message and offer its user the choice of which to send it to,
+or {\em broadcast} the image load message to the Hub, which will
+take care of forwarding it to all (and only) the image-capable clients.
+
+The above description of MType syntax and handling says
+nothing about how particular MTypes are to be defined.
+In order to support useful messaging, a common set of MTypes
+describing data and control exchange operations required for
+a particular problem domain must be agreed upon by authors of
+cooperating applications and publicised for future use.
+
+One possibility would be to decide on a fixed or open-ended list of
+such MTypes to form part of the SAMP standard.
+A small number of ``administrative'' MTypes,
+concerned with the messaging infrastructure,
+for instance ``{\tt samp.hub.event.register}''
+which informs existing clients when a new client has registered,
+have been included in the standard in this way.
+All of these are in the reserved ``{\tt samp.}'' namespace.
+However, for astronomy-specific MTypes this option was rejected,
+partly in order to avoid the introduction of astronomy-specific details
+into a standard which is otherwise quite suitable for use in other domains,
+and partly because the rather heavyweight IVOA process for
+standard review\citep{ivoadoc}
+(draft to acceptance rarely taking less than 12 months)
+would impede introduction and updating of MTypes as required
+by implementation experience and new application demands.
+Another option was periodic publication of MType definitions
+in an IVOA Note.  Notes may be issued at will without formal review,
+but no straightforward updating mechanism is in use,
+and this option was still felt to be undesirably cumbersome.
+
+Instead, a wiki page was set up on the
+IVOA web site listing currently agreed MTypes.
+An informal understanding was adopted in which
+application developers are encouraged to discuss requirements for
+new MTypes or modifications to existing ones either privately or
+on the associated mailing list\footnote{apps-samp@ivoa.net}, 
+and if consensus is reached, to edit the wiki page accordingly.
+This was intended as a provisional measure to be reviewed and
+modified as required, but, six years later, the need for a more
+formal process has not been apparent, and there are no current
+plans to modify this arrangement.
+
+As well as those generic MTypes which need public agreement,
+clients are at liberty to define their own application-specific ones.
+These typically provide functionality that only makes sense for
+a given appliacation, and make use of a suitably specific namespace,
+for instance ``{\tt script.aladin.send}'',
+which allows external applications to control Aladin
+\citep{2000A&AS..143...33B} using commands in its scripting language.
+
+
 
 
 \section{Use in Practice} \label{sec:usage}
