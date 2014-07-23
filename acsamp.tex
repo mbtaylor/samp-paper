@@ -41,10 +41,11 @@ and discusses some of its common and possible future usage patterns.
 \end{abstract}
 
 % is there a controlled/recommended vocabulary?
+% from http://dl.acm.org/ccs_flat.cfm
 \begin{keyword}
-SAMP
-interoperability
+message-passing
 publish-subscribe
+interoperability
 \end{keyword}
 
 \end{frontmatter}
@@ -126,15 +127,22 @@ Although communication between interactive desktop tools was the
 original stimulus for what is now SAMP, the framework is flexible
 enough to support other usage patterns as well.
 
-The rest of this paper describes the history, design and use of SAMP.
-Section
-\ref{sec:history} outlines its evolution from the earlier PLASTIC protocol,
-section \ref{sec:design} discusses the architectural principles and thinking
-behind SAMP's design, and
-section \ref{sec:protocol} provides a high-level view of the protocol itself.
-Section \ref{sec:usage} gives some examples of its use in practice, and
+Two previous papers on SAMP have been presented at the ADASS conference
+series:
+\citet{adassxxi_paper} outlines the architecture and explains
+the Web Profile, and \citet{adassxxii_bof} lists some existing
+client libraries.
+This paper discusses the protocol design and communication model
+in somewhat more detail, though at a higher level than given by the
+standard itself \citep{samp_std}, and reviews existing and current
+usage, considering lessons learned and possible future directions.
+Section \ref{sec:history} outlines its evolution from
+the earlier PLASTIC protocol,
+section \ref{sec:protocol} presents a description of the protocol itself
+along with some of the thinking for the design behind it,
+section \ref{sec:usage} gives some examples of its use in practice, and
 section \ref{sec:conclusion} concludes by reviewing the current status
-and possible future directions for the protocol.
+and possible future directions for SAMP.
 
 \section{History} \label{sec:history}
  
@@ -143,9 +151,128 @@ PLASTIC ... pub/sub ... XML-RPC/Java/RMILite
 \citep{plastic_note}
 
 
+% needs work.  Or removing.
 \section{Design Principles} \label{sec:design}
 
+Many factors fed into the design of SAMP,
+including positive and negative lessons learned
+from the experience of PLASTIC, 
+general good practice etc.
+The overriding objective here is to foster interoperability in practice,
+which requires wide take-up of the standard in candidate applications.
+
+To achieve this, the following principles were followed as much as possible:
+\begin{itemize}
+\item Ease of adoption
+\item Platform independence
+\item Extensibility
+\item Avoid standardising semantics
+\item Small messages
+\end{itemize}
+
+
 \section{Protocol Description} \label{sec:protocol}
+
+SAMP is based on a star topology, and its central component is a
+{\em Hub\/} through which all communications are passed.
+Clients first perform a resource discovery step to locate the Hub,
+and then {\em register\/} with it, obtaining a private communication
+channel through which subsequent calls to the Hub's services can be made.
+These services include accepting metadata about the registering client,
+providing information about other participating clients,
+and forwarding {\em messages\/} to those clients.
+These messages may elicit responses, which may optionally be passed
+back to the message sender, again via the Hub.
+All clients are able to send messages in this way.
+Any client may optionally declare itself {\em callable\/},
+in which case it is also able to receive messages sent by others.
+Callability is optional since it is more difficult to
+achieve in client code, requiring some server-like capacity
+on top of the ability to invoke Hub services.
+In addition to declaring itself callable, a client wishing to
+receive messages must explicitly {\em subscribe\/} to one or
+more {\em MTypes} (message types).  Every message is labelled
+with an MType, and the Hub will only deliver messages to clients
+that have declared their interest in the MType in question with
+an appropriate subscription.  When sending messages, clients may
+either {\em broadcast\/} them to all subscribed clients or
+target them to a named client, but in the latter case delivery
+will fail if the target client has not appropriately subscribed.
+If a client has no further use for SAMP communications
+(for instance on application exit), it can and should {\em unregister\/}.
+
+The details of this pattern are fleshed out in a three-layer architecture:
+\begin{description}
+\item[Abstract API:] defines the services provided by the Hub and clients
+\item[Profile:] maps the Abstract API to specific communication operations,
+  such as bytes on the wire
+\item[MTypes:] provide semantics for the actual messages exchanged between
+  clients
+\end{description}
+The following subsections describe each of these layers,
+along with some of considerations that influenced their design.
+For full details, see the SAMP Standard \citep{samp_std}.
+
+\subsection{Abstract API}
+
+The Abstract API defines the messaging capabilities of SAMP.
+It is provided in the form of a list of a dozen or so function definitions
+with typed arguments and return values, and well-defined semantics.
+Most of these functions represent services provided by the Hub, such as
+``{\tt register}'' (which returns information required by the
+client for future communications, typically an authentication token)
+or ``{\tt notifyAll}'' (which requests forwarding a given message to
+all appropriately subscribed clients).
+The rest represent services required from callable clients, such as
+``{\tt receiveNotification}'' (which consumes a given message originating
+from another client).
+
+Alongside this function list goes a type system defining the types of value
+used in the API, as well as rules for encoding various structured objects
+using these types: message objects themselves, success and failure
+message responses, application metadata, and MType subscription lists.
+
+This type system contains only three types:
+string, list and string$\rightarrow$value map.
+Structured objects are specified by the use of well-known keys in map values,
+null values are not permitted,
+and non-string scalar types must be serialized as strings.
+(Obvious) conventions are suggested for serializing
+integer, floating point and boolean values,
+but these suggestions are provided for the convenience
+of MType definitions that wish to exchange such values without
+reinventing the wheel, and are not a normative part of the protocol.
+This restricted type system has been deliberately chosen to introduce
+minimal dependency on the non-core parts of the message delivery system,
+in particular profile-specific transport mechanisms and language-specific
+client libraries.
+This both reduces the restrictions on what languages and transports
+may be used with SAMP, and ensures that values transmitted will
+not be modified during processing by parts of the messaging system
+out of client control.
+% Experience with PLASTIC showed that in loosely-typed languages
+% such as Python and Perl it was difficult to control where type
+% conversions were made.
+
+This simplifies resource discovery, since each client needs only to
+establish communications with a single point, using an appropriate
+communication method (Profile).
+Different clients may use different Profiles as required,
+and the Hub will receive and send messages with each one using its
+chosen Profile.
+
+Because of the central r\^{o}le of the Hub in this pattern,
+it presents a single point of failure and potential bottle-neck.
+% In practice, this has not generally led to performance issues.
+For this reason, the API is arranged where possible
+to minimise the internal state the Hub is required to maintain;
+for instance long-lived asynchronous messages need not consume
+Hub resources between delivery and response, since the required
+state (sender, hence recipient of the response) is maintained
+by the message recipient.
+
+
+
 
 \section{Use in Practice} \label{sec:usage}
 
