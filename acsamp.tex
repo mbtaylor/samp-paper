@@ -286,13 +286,18 @@ outside of client control.
 
 The type system is rich enough to represent complex structured data
 where required, but note it is not straightforward to use it for
-binary data, and in general transmission of bulk data is
-discouraged within SAMP messages in favour of passing URLs around instead.
+binary data, and transmission of bulk data or large payloads
+in general is discouraged within SAMP messages in favour of
+passing URLs around instead.
+This does place an additional burden on clients,
+since to exchange bulk data not available from an existing URL
+it will be necessary to make it so available, for instance by writing
+bytes to a temporary file or serving them from an embedded HTTP server.
 
 Because of the central r\^{o}le of the Hub in this pattern,
 it presents a single point of failure and potential bottle-neck.
-SAMP messages are usually short however, and in practice this has
-not generally led to performance issues.
+However, as noted above, SAMP messages are usually short,
+and in practice performance issues have not generally been apparent.
 
 The messaging model in principle associates
 a response with every message, containing at least a completion
@@ -412,6 +417,9 @@ so by using the MType patterns
 ``{\tt image.load.fits}'', ``{\tt image.*}'' or ``{\tt *}''
 a client may declare interest in only the above message,
 all image-related messages, or all messages respectively.
+% The intention is that the naming scheme should follow a hierarchical
+% scheme organising MTypes by function; in fact MType labels have
+% been assigned somewhat haphazardly.
 
 In general, a callable client will only subscribe to those MTypes on which
 it can meaningfully act, so for instance an image analysis tool
@@ -438,53 +446,12 @@ and preferably many, potentially cooperating clients
 understand and can act upon it.
 The description of MType syntax and handling in section \ref{sec:mtypes}
 says nothing about how such a library is to be assembled.
-There are two parts to this question: what is the process by
-which such a list of MTypes should be arrived at and publicised,
-and what rules or conventions should inform the details of their definition.
+There are two parts to this question:
+what rules or conventions should inform the details of the definition
+of MTypes,
+and what is the process by which such a list
+should be arrived at and publicised.
 These are addressed in the following subsections.
-
-\subsubsection{MType Process}
-
-One possibility for publicising the list of well-known MTypes
-is to decide on a fixed list to form part of the SAMP standard.
-A small number of ``administrative'' MTypes,
-concerned with the messaging infrastructure,
-for instance ``{\tt samp.hub.event.register}''
-which informs existing clients when a new client has registered,
-have been written in to the standard in this way.
-All of these are in the reserved ``{\tt samp.}'' namespace.
-However, for astronomy-specific MTypes this option was rejected,
-partly in order to avoid the introduction of astronomy-specific details
-into a standard which is otherwise quite suitable for use in other domains,
-and partly because the rather heavyweight IVOA process for
-standard review\citep{ivoadoc}
-(draft to acceptance rarely taking less than 12 months)
-would impede introduction and updating of MTypes as required
-by implementation experience and new application demands.
-Another option was periodic publication of MType definitions
-in an IVOA Note.  Such Notes may be issued at will without formal review,
-but no straightforward updating mechanism is in use,
-and this option was still felt to be undesirably cumbersome.
-
-Instead, a wiki page was set up on the
-IVOA web site listing currently agreed MTypes.
-An informal understanding was adopted in which
-application developers are encouraged to discuss requirements for
-new MTypes or modifications to existing ones either privately or
-on the associated mailing list\footnote{apps-samp@ivoa.net}, 
-and if consensus is reached, to edit the wiki page accordingly.
-This was intended as a provisional measure to be reviewed and
-modified as required, but, six years later, the need for a more
-formal process has not been apparent, and there are no current
-plans to modify this arrangement.
-
-As well as those generic MTypes which need public agreement,
-developers are at liberty to define their own application-specific ones.
-These typically provide functionality that only makes sense for
-a given application, and make use of a suitably specific namespace,
-for instance ``{\tt script.aladin.send}'',
-which allows external applications to control Aladin
-\citep{2000A&AS..143...33B} using commands in its scripting language.
 
 \subsubsection{MType Semantics}
 
@@ -503,20 +470,21 @@ for instance to execute a pre-orchestrated sequence of processing steps.
 However, this approach is less effective in less predictable environments.
 The controlling client needs to understand
 the capabilities of its partner client in order to control it.
-But if the set of tools available at runtime is chosen by a
+But if the set of tools in use at runtime is chosen by a
 user from an open-ended set
 rather than mandated by a developer, the identity of the
 partner client or clients is not known in advance.
 In general, different applications have different capability sets
 and internal data models, and these cannot readily be encompassed
 by any single general abstraction.
-Different display tools may support different data formats,
+Different image display tools
+may support different data formats,
 may or may not support multiple loaded windows or images,
 may specify zooms in different ways,
 may offer different selections of colour maps,
 may provide WCS display with different options or not at all
 and so on,
-and the burden on clients that wish to control a range
+and the burden on a client wishing to control a range
 of different recipients quickly becomes large.
 Even if an application developer is prepared to study the
 messaging APIs offered by existing available tools and implement logic
@@ -529,7 +497,8 @@ For uncontrolled environments in which the user selects
 the range of cooperating tools at runtime therefore,
 a ``loose integration'' model has turned out to be much more productive.
 This approach focuses on a ``client API''
-consisting of a fairly small number of MTypes with rather vague semantics.
+consisting of a fairly small number of MTypes with
+semantics that are non-client-specific and rather vague.
 The semantics of the most-used messages generally boils down to
 ``Here is an $X$'', where $X$ may be some resource type such as a
 table, image, spectrum,
@@ -542,14 +511,14 @@ or otherwise perform some action which makes sense given the
 receiving application's capabilities.
 Callable SAMP clients should therefore advertise themselves
 (by subscribing to the appropriate MTypes) as $X$-capable
-tools only if they are in a position to do something helpful
-with an $X$ should they be presented with one,
-and this advertisement serves as a hint to potential $X$-senders,
+tools only if they are in a position to do something sensible
+with an $X$ should they be presented with one.
+Such an advertisement serves as a hint to potential $X$-senders,
 though it does not constitute a guarantee of any particular behaviour.
 This framework usually manifests itself in a client user interface
 as an option, for an $X$ currently known by that client,
 either to {\em broadcast\/} it to all $X$-capable clients,
-or to target it to a user-selected client
+or to target it to an entry selected by the user
 from a dynamically-discovered list of $X$-capable clients.
 
 For clients to interoperate as reliably as possible in this scenario,
@@ -571,7 +540,7 @@ may not be able to receive it.
 Well-behaved recipients should include conversion code for as many
 formats as possible, and well-behaved senders should send data
 in a format dependent on what is supported by the intended recipient.
-For clients willing to expend a lot of effort on interoperability 
+For applications willing to expend a lot of effort on interoperability 
 the work required at both ends increases rapidly with the number of
 available formats, and the rest may find themselves unable to
 exchange data of essentially compatible types,
@@ -586,8 +555,9 @@ the {\em lingua franca\/}, and the only commonly-used MType is
 {\tt image.load.fits}.
 For tabular data, clients are strongly encouraged to use
 {\tt table.load.votable} even if it means translating to/from
-some other format; however other {\tt table.load.*} variants are
-in use, for instance for the CDF format, which though tabular is
+some other format; however other {\tt table.load.*} variants are in use,
+for instance for the CDF format\footnote{\url{http://cdf.gsfc.nasa.gov/}},
+which though tabular is
 not readily translated to VOTable without loss of information,
 and which tends to be used in communities not familiar with VOTable.
 In the case of spectra, for various reasons related to the
@@ -598,6 +568,71 @@ which allows any format to be used the spectral data,
 with additional parameters specifying
 the format actually in use.
 
+SAMP is capable of supporting both tight and loose integration,
+and both are in use,
+but for coupling interactive data analysis tools the loose integration
+model has proven the most successful,
+and able to support ways of working that have not been possible
+using other available messaging systems.
+
+\subsubsection{MType Definition Process}
+
+In the case of application-specific MTypes, the documentation of
+available MTypes and their definitions is clearly
+best handled as part of the documentation of the application itself.
+These typically provide functionality that only makes sense for
+a given tool, and make use of a suitably specific namespace,
+for instance ``{\tt script.aladin.send}'',
+which allows external applications to control Aladin
+\citep{2000A&AS..143...33B} using commands in its scripting language.
+
+Developers are also free to define their own MTypes for use privately
+or in some closed group with locally agreed conventions for documentation,
+perhaps to support some tight-coupling-like usage.
+
+However, for well-known MTypes intended for unrestricted use,
+for instance of the loose-coupling variety described above,
+some public process is required to establish
+and publicise their definitions, so that client developers can
+both submit their requirements for functionality, and become aware
+of the conventions in use by other tools.
+
+One possibility
+is to decide on a fixed list to form part of the SAMP standard.
+A small number of ``administrative'' MTypes,
+concerned with the messaging infrastructure,
+for instance ``{\tt samp.hub.event.register}''
+which informs existing clients when a new client has registered,
+have been written in to the standard in this way.
+All of these are in the reserved ``{\tt samp.}'' namespace.
+However, for astronomy-specific MTypes this option was rejected,
+partly in order to avoid the introduction of astronomy-specific details
+into a standard which is otherwise quite suitable for use in other domains,
+and partly because the rather heavyweight IVOA process for
+standard review\citep{ivoadoc}
+(draft to acceptance rarely taking less than 12 months)
+would impede introduction and updating of MTypes as required
+by implementation experience and new application demands.
+Another option was periodic publication of MType definitions
+in an IVOA Note.  Such Notes may be issued at will without formal review,
+but no straightforward updating mechanism is in use,
+and this option was still felt to be undesirably cumbersome.
+
+Instead, a wiki page\footnote{
+  At time of writing, this wiki page can be found near
+  \url{http://www.ivoa.net/samp/}.
+  If the process for MType publication changes in the future,
+  that URL should still indicate where to look for a list.}
+was set up on the IVOA web site listing currently agreed MTypes.
+An informal understanding was adopted in which
+application developers are encouraged to discuss requirements for
+new MTypes or modifications to existing ones either privately or
+on the associated mailing list\footnote{apps-samp@ivoa.net}, 
+and if consensus is reached, to edit the wiki page accordingly.
+This was intended as a provisional measure to be reviewed and
+modified as required, but, six years later, the need for a more
+formal process has not been apparent, and there are no current
+plans to modify this arrangement.
 
 \section{Conclusions} \label{sec:conclusion}
 
