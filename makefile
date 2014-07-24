@@ -11,11 +11,19 @@ view: $(PAPER).view
 clean:
 	rm -f $(PAPER).{aux,log,out,spl,pdf,bbl,blg}
 
-$(PAPER).pdf: $(PAPER).tex bibsamp.bib
+$(PAPER).pdf: $(PAPER).tex bibsamp.bib version.tex
 	$(PDFLATEX) $(PAPER) \
         && bibtex $(PAPER) \
         && $(PDFLATEX) $(PAPER) \
         && $(PDFLATEX) $(PAPER)
+
+version.tex: $(PAPER).tex bibsamp.bib makefile
+	echo Version: \
+            `git show -s --format=%h` \
+             \(`git show -s --format=%ci | sed 's/ .*//'`\) \
+             `git status -s | grep -q '^[MADRU ][MADRU ]' \
+                  && echo - modified` \
+             >$@
 
 .pdf.view:
 	test -f $< && acroread -geometry +50+50 -openInNewWindow $<
