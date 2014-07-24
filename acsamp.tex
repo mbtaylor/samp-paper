@@ -40,7 +40,6 @@ SAMP's specification, provides a high-level description of the protocol,
 and discusses some of its common and possible future usage patterns.
 \end{abstract}
 
-% is there a controlled/recommended vocabulary?
 % from http://dl.acm.org/ccs_flat.cfm
 \begin{keyword}
 message-passing
@@ -78,10 +77,16 @@ each specialising in a particular type of data or manipulation,
 for different data sets and different tasks,
 and has to integrate these together in a way that takes account of
 the relationships of the data items under consideration.
-For batch or pipeline-type processing this is usually, in terms of
-data flow, fairly straightforward: the output of one step can be
-fed to the input of the next as a file, stream of bytes, or some
-kind of parameter list, often under the control of a script of some kind.
+This situation is not specific to the Virtual Observatory,
+but the wealth of heterogeneous data available from the VO,
+sometimes requiring the use of additional data discovery tools,
+accentuates these issues in the VO context.
+
+For batch or pipeline-type processing the required tool integration
+is usually, in terms of data flow, fairly straightforward:
+the output of one step can be fed to the input of the next as a file,
+stream of bytes, or some kind of parameter list,
+often under the control of a script of some kind.
 
 During the exploratory or interactive phase of data analysis however,
 this traditional model of tool integration is less satisfactory.
@@ -230,7 +235,7 @@ The following subsections describe each of the three architectural layers,
 along with some of the considerations that influenced their design.
 For full details, see the SAMP Standard \citep{samp_std}.
 
-\subsection{Abstract API}
+\subsection{Abstract API} \label{sec:abstractApi}
 
 The Abstract API defines the messaging capabilities of SAMP.
 It is provided in the form of a list of a dozen or so function definitions
@@ -270,20 +275,20 @@ This both reduces the restrictions on what languages and transports
 may be used with SAMP, and ensures that values transmitted will
 not be modified during processing by parts of the messaging system
 outside of client control.
+
 % Experience with PLASTIC showed that in loosely-typed languages
 % such as Python and Perl it was difficult to control where type
 % conversions were made.
-% Better mention that it won't carry bulk binary data.
+
+The type system is rich enough to represent complex structured data
+where required, but note it is not straightforward to use it for
+binary data, and in general transmission of bulk data is
+discouraged within SAMP messages in favour of passing URLs around instead.
 
 Because of the central r\^{o}le of the Hub in this pattern,
 it presents a single point of failure and potential bottle-neck.
-% In practice, this has not generally led to performance issues.
-For this reason, the API is arranged where possible
-to minimise the internal state the Hub is required to maintain;
-for instance long-lived asynchronous messages need not consume
-Hub resources between delivery and response, since the required
-state (sender, hence recipient of the response) is maintained
-by the message recipient.
+SAMP messages are usually short however, and in practice this has
+not generally led to performance issues.
 
 The messaging model in principle associates
 a response with every message, containing at least a completion
@@ -299,7 +304,7 @@ transport mechanism, but the Hub provides an optional synchronous
 fa\c{c}ade for clients that expect fast turnarounds and wish to
 avoid the additional complication of asynchronous processing.
 
-\subsection{Profile}
+\subsection{Profile} \label{sec:profile}
 
 A particular SAMP Profile turns the Abstract API into a set of rules
 that a client can actually use to communicate with a running Hub,
@@ -324,9 +329,10 @@ along with a secret hub-generated key in a private ``lockfile''
 in the user's home directory.
 
 Version 1.3 of the standard (2012) introduced a second, the Web Profile,
-for use by browser-based clients.
-This is required for web applications since the sandboxed environment
-in which they are run makes the Standard Profile inaccessible.
+for use by web-based clients.
+This is required for applications running from web pages,
+since the sandboxed environment imposed by the browser
+makes the Standard Profile inaccessible.
 It shares use of XML-RPC and some other characteristics with the
 Standard Profile, but hub discovery has to be done differently,
 and there are a number of complications to do with security,
@@ -362,7 +368,7 @@ of profiles is discouraged.
 % scheme serves as a vindication of the design.
 
 
-\subsection{MTypes}
+\subsection{MTypes} \label{sec:mtypes}
 
 An MType (message type) is the description for a message with particular
 syntax and semantics.
@@ -413,20 +419,35 @@ message and offer its user the choice of which to send it to,
 or {\em broadcast} the image load message to the Hub, which will
 take care of forwarding it to all (and only) the image-capable clients.
 
-The above description of MType syntax and handling says
-nothing about how particular MTypes are to be defined.
-In order to support useful messaging, a common set of MTypes
-describing data and control exchange operations required for
-a particular problem domain must be agreed upon by authors of
-cooperating applications and publicised for future use.
+\section{Use in Practice} \label{sec:usage}
 
-One possibility would be to decide on a fixed or open-ended list of
-such MTypes to form part of the SAMP standard.
+\subsection{MType Content}
+
+The utility and success of a messaging infrastructure for
+a particular problem domain relies on having suitable
+message semantics to go with it.
+SAMP can only be a useful tool for astronomical data analysis
+if there exists a suitable library of MTypes for communicating
+the information that applications need in practice to exchange,
+given that any given MType is only useful if at least two,
+and preferably many, potentially cooperating clients
+understand and can act upon it.
+The description of MType syntax and handling in section \ref{sec:mtypes}
+says nothing about how such a library is to be assembled.
+There are two parts to this question: what is the process by
+which such a list of MTypes should be arrived at and publicised,
+and what rules or conventions should inform the details of their definition.
+These are addressed in the following subsections.
+
+\subsubsection{MType Process}
+
+One possibility for publicising the list of well-known MTypes
+is to decide on a fixed list to form part of the SAMP standard.
 A small number of ``administrative'' MTypes,
 concerned with the messaging infrastructure,
 for instance ``{\tt samp.hub.event.register}''
 which informs existing clients when a new client has registered,
-have been included in the standard in this way.
+have been written in to the standard in this way.
 All of these are in the reserved ``{\tt samp.}'' namespace.
 However, for astronomy-specific MTypes this option was rejected,
 partly in order to avoid the introduction of astronomy-specific details
@@ -437,7 +458,7 @@ standard review\citep{ivoadoc}
 would impede introduction and updating of MTypes as required
 by implementation experience and new application demands.
 Another option was periodic publication of MType definitions
-in an IVOA Note.  Notes may be issued at will without formal review,
+in an IVOA Note.  Such Notes may be issued at will without formal review,
 but no straightforward updating mechanism is in use,
 and this option was still felt to be undesirably cumbersome.
 
@@ -454,21 +475,130 @@ formal process has not been apparent, and there are no current
 plans to modify this arrangement.
 
 As well as those generic MTypes which need public agreement,
-clients are at liberty to define their own application-specific ones.
+developers are at liberty to define their own application-specific ones.
 These typically provide functionality that only makes sense for
-a given appliacation, and make use of a suitably specific namespace,
+a given application, and make use of a suitably specific namespace,
 for instance ``{\tt script.aladin.send}'',
 which allows external applications to control Aladin
 \citep{2000A&AS..143...33B} using commands in its scripting language.
 
+\subsubsection{MType Semantics}
 
+The most obvious approach for providing message-based control
+of an application
+is to identify (at least some of) the capabilities it provides and
+provide a messaging interface with parameters and return values
+exposing those capabilities.  An image display application might
+expose a set of MTypes allowing image load into a new window,
+zoom configuration, colour map choice, WCS display and so on.
+This allows other applications to control its behaviour
+in detail and is suitable for tight integration of a known set
+of tools with a good understanding of each other's capabilities,
+for instance to execute a pre-orchestrated sequence of processing steps.
 
+However, this approach is less effective in less predictable environments.
+The controlling client needs to understand
+the capabilities of its partner client in order to control it.
+But if the set of tools available at runtime is chosen by a
+user from an open-ended set
+rather than mandated by a developer, the identity of the
+partner client or clients is not known in advance.
+In general, different applications have different capability sets
+and internal data models, and these cannot readily be encompassed
+by any single general abstraction.
+Different display tools may support different data formats,
+may or may not support multiple loaded windows or images,
+may specify zooms in different ways,
+may offer different selections of colour maps,
+may provide WCS display with different options or not at all
+and so on,
+and the burden on clients that wish to control a range
+of different recipients quickly becomes large.
+Even if an application developer is prepared to study the
+messaging APIs offered by existing available tools and implement logic
+managing message dispatch for each case,
+the resulting code will not cope with applications
+unknown to the developer,
+for instance ones which have not yet been written.
 
-\section{Use in Practice} \label{sec:usage}
+For uncontrolled environments in which the user selects
+the range of cooperating tools at runtime therefore,
+a ``loose integration'' model has turned out to be much more productive.
+This approach focuses on a ``client API''
+consisting of a fairly small number of MTypes with rather vague semantics.
+The semantics of the most-used messages generally boils down to
+``Here is an $X$'', where $X$ may be some resource type such as a
+table, image, spectrum,
+sky position, coverage region, bibcode etc,
+or sometimes a reference to an $X$ from a previous message,
+for instance a row selection relating to an earlier-sent table.
+The implication of such an MType is that the receiver should do
+something with the $X$ in question: load, display, highlight,
+or otherwise perform some action which makes sense given the
+receiving application's capabilities.
+Callable SAMP clients should therefore advertise themselves
+(by subscribing to the appropriate MTypes) as $X$-capable
+tools only if they are in a position to do something helpful
+with an $X$ should they be presented with one,
+and this advertisement serves as a hint to potential $X$-senders,
+though it does not constitute a guarantee of any particular behaviour.
+This framework usually manifests itself in a client user interface
+as an option, for an $X$ currently known by that client,
+either to {\em broadcast\/} it to all $X$-capable clients,
+or to target it to a user-selected client
+from a dynamically-discovered list of $X$-capable clients.
+
+For clients to interoperate as reliably as possible in this scenario,
+it is not sufficient just to agree on the notion of a table or an image
+for exchange, it is also necessary to specify the exact data exchange
+format.
+In the case of tabular data, a variety of possible exchange formats
+is in common use: FITS binary and ASCII tables, VOTable,
+Comma-Separated Values and a host of others including 
+many ASCII-based variants.  Different choices are convenient in
+different usage contexts, suggesting the need for a variety of
+distinct format-specific MTypes.
+However, a proliferation of alternative exchange formats,
+though superficially convenient, erodes interoperability.
+If multiple exchange formats capaple of serializing the same thing
+are available,
+the sender has to choose which to send, and the receiver may or
+may not be able to receive it.
+Well-behaved recipients should include conversion code for as many
+formats as possible, and well-behaved senders should send data
+in a format dependent on what is supported by the intended recipient.
+For clients willing to expend a lot of effort on interoperability 
+the work required at both ends increases rapidly with the number of
+available formats, and the rest may find themselves unable to
+exchange data of essentially compatible types,
+or the community of SAMP clients may fragment into format-specific
+sub-communities unable to communicate globally.
+As much as possible therefore, it is desirable to restrict the options
+to a single well-defined exchange format for each basic data type.
+
+This can be a difficult balance to get right.
+In the case of images, astronomy is fortunate that FITS serves as
+the {\em lingua franca\/}, and the only commonly-used MType is
+{\tt image.load.fits}.
+For tabular data, clients are strongly encouraged to use
+{\tt table.load.votable} even if it means translating to/from
+some other format; however other {\tt table.load.*} variants are
+in use, for instance for the CDF format, which though tabular is
+not readily translated to VOTable without loss of information,
+and which tends to be used in communities not familiar with VOTable.
+In the case of spectra, for various reasons related to the
+form in which spectral data is typically obtained and
+the typical capabilities of spectrum-capable clients,
+the relevant MType is {\tt spectrum.load.ssa-generic},
+which allows any format to be used the spectral data,
+with additional parameters specifying
+the format actually in use.
+
 
 \section{Conclusions} \label{sec:conclusion}
 
-Particularly successful: API/profile split; bottom-up semantics;
+Particularly successful: API/profile split;
+bottom-up semantics/lightweight semantics process;
 restricted type system; extensible definitions
   
 
