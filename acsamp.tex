@@ -53,6 +53,9 @@ publish-subscribe
 {\tt \input{version}}
 \end{flushright}
 
+% use this in dot-delimited strings in place of a literal period.
+\newcommand{\kdot}{.\linebreak[0]}
+
 \section{Introduction}
 
 % try to avoid re-writing adass_xxi intro
@@ -342,8 +345,9 @@ and MType-specified message parameter lists and return values.
 
 For instance, a client sending a message must pass it to the Hub
 as a map with two required keys:
-{\tt samp.mtype} giving the MType label and
-{\tt samp.params} giving the MType-specified parameter list (itself a map).
+{\tt samp{\kdot}mtype} giving the MType label and
+{\tt samp{\kdot}params} giving the MType-specified parameter list
+(itself a map).
 But a client may optionally insert additional non-standard key/value pairs
 into that map, for instance using a non-standard key {\tt priority}
 to associate a particular priority level with the message.
@@ -354,9 +358,9 @@ with the additional entry present, so if one of those supports
 this feature then it may use the value in processing.
 The same rule applies for instance to the MType-determined
 message parameter list;
-an MType like {\tt image.load} has a required parameter {\tt url},
+an MType like {\tt image{\kdot}load} has a required parameter {\tt url},
 but a sending client may add a non-standard parameter like
-{\tt colormap} (or {\tt ds9.colormap}) alongside the well-known ones
+{\tt colormap} (or {\tt ds9{\kdot}colormap}) alongside the well-known ones
 for the benefit of any client that happens to support it.
 Clients can therefore piggy-back experimental or application-specific
 instructions on top of generic messages to achieve more detailed control
@@ -471,11 +475,11 @@ a set of zero or more typed and named return values,
 and some associated semantics indicating what the sender of such a
 message is trying to convey.
 
-A commonly used MType is ``{\tt image.load.fits}'',
+A commonly used MType is ``{\tt image{\kdot}load{\kdot}fits}'',
 defined like this:
 \begin{quote}
   {\em Name:\/} \\
-    \hspace*{1em} {\tt image.load.fits} \\
+    \hspace*{1em} {\tt image{\kdot}load{\kdot}fits} \\
   {\em Semantics:\/} \\
     \hspace*{1em} Loads a 2-d FITS image \\
   {\em Arguments:\/} \\
@@ -496,7 +500,7 @@ it is used by clients to {\em subscribe\/} to messages, that is to
 indicate to the Hub which messages they are prepared to receive.
 For the purpose of subscription a limited wildcarding syntax is available,
 so by using the MType patterns
-``{\tt image.load.fits}'', ``{\tt image.*}'' or ``{\tt *}''
+``{\tt image{\kdot}load{\kdot}fits}'', ``{\tt image.*}'' or ``{\tt *}''
 a client may declare interest in only the above message,
 all image-related messages, or all messages respectively.
 % The intention is that the naming scheme should follow a hierarchical
@@ -505,8 +509,8 @@ all image-related messages, or all messages respectively.
 
 In general, a callable client will only subscribe to those MTypes on which
 it can meaningfully act, so for instance an image analysis tool
-typically would subscribe to {\tt image.load.fits},
-but not to {\tt spectrum.load.ssa-generic}.
+typically would subscribe to {\tt image{\kdot}load{\kdot}fits},
+but not to {\tt spectrum{\kdot}load{\kdot}ssa-generic}.
 A client that has an image FITS file to send can then
 either query the Hub for those clients subscribed to the image load
 message and offer its user the choice of which to send it to,
@@ -635,10 +639,10 @@ to a single well-defined exchange format for each basic data type.
 This can be a difficult balance to get right.
 In the case of images, astronomy is fortunate that FITS serves as
 the {\em lingua franca\/}, and the only commonly-used MType is
-{\tt image.load.fits}.
+{\tt image{\kdot}load{\kdot}fits}.
 For tabular data, clients are strongly encouraged to use
-{\tt table.load.votable} even if it means translating to/from
-some other format; however other {\tt table.load.*} variants are in use,
+{\tt table{\kdot}load{\kdot}votable} even if it means translating to/from
+some other format; however other {\tt table{\kdot}load.*} variants are in use,
 for instance for the CDF format\footnote{\url{http://cdf.gsfc.nasa.gov/}},
 which though tabular is
 not readily translated to VOTable without loss of information,
@@ -646,7 +650,7 @@ and which tends to be used in communities not familiar with VOTable.
 In the case of spectra, for various reasons related to the
 form in which spectral data is typically obtained and
 the typical capabilities of spectrum-capable clients,
-the relevant MType is {\tt spectrum.load.ssa-generic},
+the relevant MType is {\tt spectrum{\kdot}load{\kdot}ssa-generic},
 which allows any format to be used for the spectral data,
 with additional parameters specifying
 the format actually in use.
@@ -665,7 +669,7 @@ available MTypes and their definitions is clearly
 best handled as part of the documentation of the application itself.
 These typically provide functionality that only makes sense for
 a given tool, and make use of a suitably specific namespace,
-for instance ``{\tt script.aladin.send}'',
+for instance ``{\tt script{\kdot}aladin{\kdot}send}'',
 which allows external applications to control Aladin
 \citep{2000A&AS..143...33B} using commands in its scripting language.
 
@@ -684,7 +688,7 @@ One possibility
 is to decide on a fixed list to form part of the SAMP standard.
 A small number of ``administrative'' MTypes,
 concerned with the messaging infrastructure,
-for instance ``{\tt samp.hub.event.register}''
+for instance ``{\tt samp{\kdot}hub{\kdot}event{\kdot}register}''
 which informs existing clients when a new client has registered,
 have been written in to the standard in this way.
 All of these are in the reserved ``{\tt samp.}'' namespace.
