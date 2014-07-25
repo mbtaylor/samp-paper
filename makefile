@@ -9,7 +9,7 @@ build: $(PAPER).pdf
 view: $(PAPER).view
 
 clean:
-	rm -f $(PAPER).{aux,log,out,spl,pdf,bbl,blg}
+	rm -f $(PAPER).{aux,log,out,spl,pdf,bbl,blg} version.tex
 
 $(PAPER).pdf: $(PAPER).tex bibsamp.bib version.tex
 	$(PDFLATEX) $(PAPER) \
@@ -20,7 +20,7 @@ $(PAPER).pdf: $(PAPER).tex bibsamp.bib version.tex
 version.tex: $(PAPER).tex bibsamp.bib makefile
 	echo Version: \
             `git show -s --format=%h` \
-             \(`git show -s --format=%ci | sed 's/ .*//'`\) \
+             \(`git show -s --format=%ci | sed 's/:[0-9]* .*//'`\) \
              `git status -s | grep -q '^[MADRU ][MADRU ]' \
                   && echo - modified` \
              >$@
