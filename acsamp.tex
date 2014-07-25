@@ -42,9 +42,9 @@ and discusses some of its common and possible future usage patterns.
 
 % from http://dl.acm.org/ccs_flat.cfm
 \begin{keyword}
+interoperability
 message-passing
 publish-subscribe
-interoperability
 \end{keyword}
 
 \end{frontmatter}
@@ -176,8 +176,7 @@ To achieve this, the following principles were followed as much as possible:
 \item Ease of adoption
 \item Platform independence
 \item Extensibility
-\item Avoid standardising semantics
-\item Small messages
+\item Pragmatism
 \end{itemize}
 
 
@@ -200,9 +199,14 @@ Callability is optional since it is more difficult to
 achieve in client code, requiring some server-like capacity
 on top of the ability to invoke Hub services.
 In addition to declaring itself callable, a client wishing to
-receive messages must explicitly {\em subscribe\/} to one or
-more {\em MTypes} (message types).  Every message is labelled
-with an MType, and the Hub will only deliver messages to clients
+receive messages must explicitly {\em subscribe}\footnote{
+   The term ``subscription'' derives from the ``publish/subscribe''
+   messaging pattern.  It may however be more helpful to think of
+   subscription as {\em declaring support for\/} a particular message type.
+}
+to one or more {\em MTypes} (message types).
+Every message is labelled with an MType,
+and the Hub will only deliver messages to clients
 that have declared their interest in the MType in question with
 an appropriate subscription.  When sending messages, clients may
 either {\em broadcast\/} them to all subscribed clients or
@@ -213,7 +217,8 @@ If a client has no further use for SAMP communications
 
 The details of this pattern are fleshed out in a three-layer architecture:
 \begin{description}
-\item[Abstract API:] defines the services provided by the Hub and clients
+\item[Abstract API:] defines the services provided by the Hub and clients;
+  this goes along with an associated {\bf Type System}
 \item[Profile:] maps the Abstract API to specific communication operations,
   such as bytes on the wire
 \item[MTypes:] provide semantics for the actual messages exchanged between
@@ -234,6 +239,10 @@ By the same token, message semantics are outside the scope of the
 messaging infrastructure, so hub implementations and client toolkits
 treat all messages without regard to their semantic content.
 
+Because of the central r\^{o}le of the Hub in this pattern,
+it presents a single point of failure and potential bottle-neck.
+However, SAMP messages are usually short,
+and in practice performance issues have not generally been apparent.
 
 The following subsections describe each of the three architectural layers,
 along with some of the considerations that influenced their design.
@@ -253,8 +262,25 @@ The rest represent services required from callable clients, such as
 ``{\tt receiveNotification}'' (which consumes a given message originating
 from another client).
 
-Alongside this function list goes a type system defining the types of value
-used in the API, as well as rules for encoding various structured objects
+The messaging model in principle associates
+a response with every message, containing at least a completion
+status flag along with zero or more MType-defined return values.
+However it is up to the sending client whether a response is
+required from any given message, and if not the ``send-and-forget''
+({\em notification\/}) pattern may be used,
+with lower cost for sender, recipient and hub.
+Message processing is fundamentally asynchronous from the
+receiver's point of view, so that message/response times are
+not limited to the lifetime of an RPC call in the underlying
+transport mechanism, but the Hub provides an optional synchronous
+fa\c{c}ade for clients that expect fast turnarounds and wish to
+avoid the additional complication of asynchronous processing.
+
+\subsubsection{Type System}
+
+Alongside the Abstract API's function list
+goes a type system defining the types of value it  uses,
+as well as rules for encoding various structured objects
 using these types: message objects themselves, success and failure
 message responses, application metadata, and MType subscription lists.
 
@@ -265,6 +291,7 @@ values that are themselves of type string, list or map.
 Structured objects are specified by the use of well-known keys in map values,
 null values are not permitted,
 and non-string scalar types must be serialized as strings.
+Strings are restricted to 7-bit ASCII excluding problematic control characters.
 (Obvious) conventions are suggested for serializing
 integer, floating point and boolean values,
 but these suggestions are provided for the convenience
@@ -275,7 +302,7 @@ minimal dependency on the details of
 non-core parts of the message delivery system,
 in particular profile-specific transport mechanisms and language-specific
 client libraries.
-This both reduces the restrictions on what languages and transports
+This both reduces the restrictions on what languages and transport layers
 may be used with SAMP, and ensures that values transmitted will
 not be modified during processing by parts of the messaging system
 outside of client control.
@@ -291,33 +318,81 @@ in general is discouraged within SAMP messages in favour of
 passing URLs around instead.
 This does place an additional burden on clients,
 since to exchange bulk data not available from an existing URL
-it will be necessary to make it so available, for instance by writing
+it is necessary to make it so available, for instance by writing
 bytes to a temporary file or serving them from an embedded HTTP server.
 
-Because of the central r\^{o}le of the Hub in this pattern,
-it presents a single point of failure and potential bottle-neck.
-However, as noted above, SAMP messages are usually short,
-and in practice performance issues have not generally been apparent.
+\subsubsection{Extensible Vocabularies}
 
-The messaging model in principle associates
-a response with every message, containing at least a completion
-status flag along with zero or more return values.
-However it is up to the sending client whether a response is
-required from any given message, and if not the ``send-and-forget''
-({\em notification\/}) pattern may be used,
-with lower cost for sender, recipient and hub.
-Message processing is fundamentally asynchronous from the
-receiver's point of view, so that message/response times are
-not limited to the lifetime of an RPC call in the underlying
-transport mechanism, but the Hub provides an optional synchronous
-fa\c{c}ade for clients that expect fast turnarounds and wish to
-avoid the additional complication of asynchronous processing.
+Extensibility is built into this system via the notion of an
+{\em extensible vocabulary} used when representing structured objects.
+
+Structured objects are represented as maps with well-known keys,
+but the rule is that additional keys are always permitted,
+and that hubs and clients must ignore any keys they do not understand,
+propagating them to downstream consumers where applicable
+(compare the NDF extension architecture described in \citet{sgp38}).
+A corollary is that ignoring any such non-well-known keys must
+result in reasonable behaviour.
+This rule applies wherever maps are passed around
+by the messaging infrastructure,
+including 
+client metadata and subscription declarations,
+message transmission information,
+and MType-specified message parameter lists and return values.
+
+For instance, a client sending a message must pass it to the Hub
+as a map with two required keys:
+{\tt samp.mtype} giving the MType label and
+{\tt samp.params} giving the MType-specified parameter list (itself a map).
+But a client may optionally insert additional non-standard key/value pairs
+into that map, for instance using a non-standard key {\tt priority}
+to associate a particular priority level with the message.
+If the Hub happens to support this non-standard feature,
+it is able to treat the message specially in view of this declaration;
+in any case it will propagate the message to recipient clients
+with the additional entry present, so if one of those supports
+this feature then it may use the value in processing.
+The same rule applies for instance to the MType-determined
+message parameter list;
+an MType like {\tt image.load} has a required parameter {\tt url},
+but a sending client may add a non-standard parameter like
+{\tt colormap} (or {\tt ds9.colormap}) alongside the well-known ones
+for the benefit of any client that happens to support it.
+Clients can therefore piggy-back experimental or application-specific
+instructions on top of generic messages to achieve more detailed control
+where available, falling back to the baseline functionality if it is not.
+Using this extensibility pattern, new or enhanced features of 
+particular MTypes or of the protocol itself can be prototyped 
+very easily, requiring no changes to the SAMP standard or infrastructure
+implementation beyond those components actually using
+the non-standard features,
+and imposing no negative impact on existing messaging operations.
+
+Some associated namespacing rules apply.
+Well-known keys defined by the SAMP standard are in the reserved {\tt samp}
+namespace, meaning they begin with the string ``{\tt samp.}''.
+When introducing non-standard keys it is not permitted to use this
+namespace, but any other syntactically legal string is allowed.
+The special namespace {\tt x-samp} is available
+for keys proposed for future incorporation into the standard,
+and hubs and clients should treat keys which differ 
+only in the substitution of {\tt samp} for {\tt x-samp} as identical,
+to ease standardisation of prototype features.
+In the case of MType parameters and return values,
+which are mostly not defined by SAMP itself, there is no reserved namespace.
+These rules do not defend against all possibility of namespace clashes,
+but in practice that has not been a problem,
+and the decision to use short readable strings
+instead of rigidly namespaced sequences such as URIs
+(which was the rule in PLASTIC) looks in hindsight to be a good one.
 
 \subsection{Profile} \label{sec:profile}
 
-A particular SAMP Profile turns the Abstract API into a set of rules
+A particular SAMP Profile is what
+turns the Abstract API into a set of rules
 that a client can actually use to communicate with a running Hub,
 and hence with other clients.
+
 It performs two main jobs: first, it describes
 how the functions defined by the API are turned into concrete
 communication operations, by specifying an RPC-capable
@@ -326,20 +401,25 @@ data types into the parameters and responses used by that mechanism.
 Second, it defines a hub discovery mechanism,
 which tells clients how to establish initial communications with the Hub,
 typically involving some authentication step.
-Particular profiles may also specify provide additional
+Particular profiles may also specify additional
 profile-specific hub or client services exposed as functions
 alongside those mandated by the Abstract API.
 
 Initially (SAMP 1.11, 2009)
 only a single profile was defined, the Standard Profile.
-This uses XML-RPC as a transport mechanism,
+This uses XML-RPC\footnote{
+   XML-RPC is a simple protocol for remote procedure calling
+   based on HTTP and XML. It resembles a very much slimmed-down SOAP.
+   Documentation can be found at \url{http://www.xmlrpc.com/}.
+}
+as a transport mechanism,
 and provides hub discovery by storing the URL of the hub's XML-RPC server
 along with a secret hub-generated key in a private ``lockfile''
 in the user's home directory.
 
 Version 1.3 of the standard (2012) introduced a second, the Web Profile,
 for use by web-based clients.
-This is required for applications running from web pages,
+This is required for applications running within web pages,
 since the sandboxed environment imposed by the browser
 makes the Standard Profile inaccessible.
 It shares use of XML-RPC and some other characteristics with the
@@ -353,12 +433,14 @@ allows different transports to be introduced without changes to the core
 protocol or existing clients, and has a number of benefits.
 In a given SAMP session, a client may use the most appropriate
 Profile for its SAMP communications and exchange
-messages seamlessly with other clients using different profiles
-without ever being aware of that fact.
+messages seamlessly with other clients using different profiles;
+a desktop application can exchange messages with a web page
+just as easily as with another desktop client.
 This works because clients only ever
 communicate directly with the Hub and not with each other,
-and the Hub translates profile-specific calls to and from
-the messaging model defined by the Abstract API.
+while the Hub performs lossless translation between
+profile-specific network operations
+and the messaging model defined by the Abstract API.
 
 Future requirements may result in additional Profile definitions,
 and there is nothing in principle to prevent hub developers
@@ -433,6 +515,8 @@ take care of forwarding it to all (and only) the image-capable clients.
 
 \section{Use in Practice} \label{sec:usage}
 
+\subsection{Client Ecosystem}
+
 \subsection{MType Content}
 
 The utility and success of a messaging infrastructure for
@@ -447,9 +531,8 @@ understand and can act upon it.
 The description of MType syntax and handling in section \ref{sec:mtypes}
 says nothing about how such a library is to be assembled.
 There are two parts to this question:
-what rules or conventions should inform the details of the definition
-of MTypes,
-and what is the process by which such a list
+what kinds of messages do we want to be able to exchange,
+and what is the process by which a list of such message types
 should be arrived at and publicised.
 These are addressed in the following subsections.
 
@@ -496,11 +579,11 @@ for instance ones which have not yet been written.
 For uncontrolled environments in which the user selects
 the range of cooperating tools at runtime therefore,
 a ``loose integration'' model has turned out to be much more productive.
-This approach focuses on a ``client API''
+This approach focuses on a messaging interface
 consisting of a fairly small number of MTypes with
 semantics that are non-client-specific and rather vague.
 The semantics of the most-used messages generally boils down to
-``Here is an $X$'', where $X$ may be some resource type such as a
+``{\em Here is an X}'', where $X$ may be some resource type such as a
 table, image, spectrum,
 sky position, coverage region, bibcode etc,
 or sometimes a reference to an $X$ from a previous message,
@@ -515,7 +598,7 @@ tools only if they are in a position to do something sensible
 with an $X$ should they be presented with one.
 Such an advertisement serves as a hint to potential $X$-senders,
 though it does not constitute a guarantee of any particular behaviour.
-This framework usually manifests itself in a client user interface
+This framework typically manifests itself in a client user interface
 as an option, for an $X$ currently known by that client,
 either to {\em broadcast\/} it to all $X$-capable clients,
 or to target it to an entry selected by the user
@@ -564,14 +647,14 @@ In the case of spectra, for various reasons related to the
 form in which spectral data is typically obtained and
 the typical capabilities of spectrum-capable clients,
 the relevant MType is {\tt spectrum.load.ssa-generic},
-which allows any format to be used the spectral data,
+which allows any format to be used for the spectral data,
 with additional parameters specifying
 the format actually in use.
 
 SAMP is capable of supporting both tight and loose integration,
 and both are in use,
 but for coupling interactive data analysis tools the loose integration
-model has proven the most successful,
+model has proven the most productive,
 and able to support ways of working that have not been possible
 using other available messaging systems.
 
@@ -594,7 +677,7 @@ However, for well-known MTypes intended for unrestricted use,
 for instance of the loose-coupling variety described above,
 some public process is required to establish
 and publicise their definitions, so that client developers can
-both submit their requirements for functionality, and become aware
+both contribute their requirements for functionality, and become aware
 of the conventions in use by other tools.
 
 One possibility
@@ -609,11 +692,11 @@ However, for astronomy-specific MTypes this option was rejected,
 partly in order to avoid the introduction of astronomy-specific details
 into a standard which is otherwise quite suitable for use in other domains,
 and partly because the rather heavyweight IVOA process for
-standard review\citep{ivoadoc}
+standard review \citep{ivoadoc}
 (draft to acceptance rarely taking less than 12 months)
 would impede introduction and updating of MTypes as required
 by implementation experience and new application demands.
-Another option was periodic publication of MType definitions
+Another option is periodic publication of MType definitions
 in an IVOA Note.  Such Notes may be issued at will without formal review,
 but no straightforward updating mechanism is in use,
 and this option was still felt to be undesirably cumbersome.
