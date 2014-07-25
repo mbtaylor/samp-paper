@@ -62,6 +62,14 @@ publish-subscribe
 \section{Introduction}
 
 % try to avoid re-writing adass_xxi intro
+{\todo
+Is this introduction too long/detailed?
+Does it state the obvious?
+Should there be a concrete example?
+Is it too specific to a single use case (maybe more like history)?
+The adass\_xxi intro is much more focussed, but don't want to cut'n'paste.
+}
+
 
 Astronomical research requires complex and flexible manipulation
 and processing of various different types of data.
@@ -118,10 +126,6 @@ interrupt the flow of the data exploration, reduce the parameter
 space able to be investigated, and effectively stifle discovery
 of relationships present in the data.
 
-% should there be a concrete example?
-% is this stating the obvious?
-% is the introduction far too long?
-
 From this point of view, a single monolithic astronomical data analysis
 user application providing the best available facilities for
 interactive presentation, manipulation and analysis of all kinds of
@@ -160,16 +164,18 @@ section \ref{sec:usage} gives some examples of its use in practice, and
 section \ref{sec:conclusion} concludes by reviewing the current status
 and possible future directions for SAMP.
 
+{\todo
 \section{History} \label{sec:history}
  
-{\todo
-SC4DEVO ... VOTech ... VODesktop ... AstroGrid Runtime ...
-PLASTIC ... pub/sub ... XML-RPC/Java/RMILite
-\citep{plastic_note}
+  \begin{itemize}
+  \item SC4DEVO ... VOTech ... VODesktop ... AstroGrid Runtime ...
+  \item PLASTIC\citep{plastic_note} ... pub/sub ... XML-RPC/Java/RMILite
+  \item Lessons learned from PLASTIC
+  \end{itemize}
 }
 
 
-% needs work.  Or removing.
+{\todo
 \section{Design Principles} \label{sec:design}
 
 Many factors fed into the design of SAMP,
@@ -184,8 +190,10 @@ To achieve this, the following principles were followed as much as possible:
 \item Ease of adoption
 \item Platform independence
 \item Extensibility
-\item Pragmatism
+\item Pragmatism (over robustness, security, use short strings not URIs,
+                  tolerant of failure ...)
 \end{itemize}
+}
 
 
 \section{Protocol Description} \label{sec:protocol}
@@ -262,12 +270,12 @@ The Abstract API defines the messaging capabilities of SAMP.
 It is provided in the form of a list of a dozen or so function definitions
 with typed arguments and return values, and well-defined semantics.
 Most of these functions represent services provided by the Hub, such as
-``{\tt register}'' (which returns information required by the
+{\tt register} (which returns information required by the
 client for future communications, typically an identification token)
-or ``{\tt notifyAll}'' (which requests forwarding a given message to
+or {\tt notifyAll} (which requests forwarding a given message to
 all appropriately subscribed clients).
 The rest represent services required from callable clients, such as
-``{\tt receiveNotification}'' (which consumes a given message originating
+{\tt receiveNotification} (which consumes a given message originating
 from another client).
 
 The messaging model in principle associates
@@ -339,11 +347,12 @@ but the rule is that additional keys are always permitted,
 and that hubs and clients must ignore any keys they do not understand,
 propagating them to downstream consumers where applicable
 (compare the NDF extension architecture described in \citet{sgp38}).
-A corollary is that ignoring any such non-well-known keys must
-result in reasonable behaviour.
-This rule applies wherever maps are passed around
-by the messaging infrastructure,
-including 
+A corollary is that such non-well-known keys must be defined in such
+a way that ignoring them will result in reasonable behaviour.
+The Abstract API tends to prefer maps (unordered name/value pairs)
+over ordered parameter lists, which makes this extensibility
+pervasive throughout the messaging system,
+applying for instance to
 client metadata and subscription declarations,
 message transmission information,
 and MType-specified message parameter lists and return values.
@@ -376,6 +385,8 @@ very easily, requiring no changes to the SAMP standard or infrastructure
 implementation beyond those components actually using
 the non-standard features,
 and imposing no negative impact on existing messaging operations.
+If they are found to be useful, they may be adopted in the future
+as (most likely optional) well-known keys alongside the original ones.
 
 Some associated namespacing rules apply.
 Well-known keys defined by the SAMP standard are in the reserved {\tt samp}
@@ -394,6 +405,10 @@ but in practice that has not been a problem,
 and the decision to use short readable strings
 instead of rigidly namespaced sequences such as URIs
 (which was the rule in PLASTIC) looks in hindsight to be a good one.
+
+Note that the widespread use of named parameters (within maps)
+rather than ordered lists makes this kind of extensibility much easier/
+more natural.
 
 \subsection{Profile} \label{sec:profile}
 
@@ -480,7 +495,7 @@ a set of zero or more typed and named return values,
 and some associated semantics indicating what the sender of such a
 message is trying to convey.
 
-A commonly used MType is ``{\tt image{\kdot}load{\kdot}fits}'',
+A commonly used MType is {\tt image{\kdot}load{\kdot}fits},
 defined like this:
 \begin{quote}
   {\em Name:\/} \\
@@ -505,7 +520,7 @@ it is used by clients to {\em subscribe\/} to messages, that is to
 indicate to the Hub which messages they are prepared to receive.
 For the purpose of subscription a limited wildcarding syntax is available,
 so by using the MType patterns
-``{\tt image{\kdot}load{\kdot}fits}'', ``{\tt image.*}'' or ``{\tt *}''
+{\tt image{\kdot}load{\kdot}fits}, {\tt image.*} or {\tt *}
 a client may declare interest in only the above message,
 all image-related messages, or all messages respectively.
 % The intention is that the naming scheme should follow a hierarchical
@@ -525,6 +540,12 @@ take care of forwarding it to all (and only) the image-capable clients.
 \section{Use in Practice} \label{sec:usage}
 
 \subsection{Client Ecosystem}
+
+{\todo tolerance of failure, hub startup/shutdown handling}
+
+{\todo move some of the MType stuff up here?}
+
+\subsection{Existing Software}
 
 \subsection{MType Content}
 
@@ -674,7 +695,7 @@ available MTypes and their definitions is clearly
 best handled as part of the documentation of the application itself.
 These typically provide functionality that only makes sense for
 a given tool, and make use of a suitably specific namespace,
-for instance ``{\tt script{\kdot}aladin{\kdot}send}'',
+for instance {\tt script{\kdot}aladin{\kdot}send},
 which allows external applications to control Aladin
 \citep{2000A&AS..143...33B} using commands in its scripting language.
 
@@ -693,10 +714,10 @@ One possibility
 is to decide on a fixed list to form part of the SAMP standard.
 A small number of ``administrative'' MTypes,
 concerned with the messaging infrastructure,
-for instance ``{\tt samp{\kdot}hub{\kdot}event{\kdot}register}''
+for instance {\tt samp{\kdot}hub{\kdot}event{\kdot}register}
 which informs existing clients when a new client has registered,
 have been written in to the standard in this way.
-All of these are in the reserved ``{\tt samp.}'' namespace.
+All of these are in the reserved {\tt samp.} namespace.
 However, for astronomy-specific MTypes this option was rejected,
 partly in order to avoid the introduction of astronomy-specific details
 into a standard which is otherwise quite suitable for use in other domains,
@@ -728,9 +749,33 @@ plans to modify this arrangement.
 
 \section{Conclusions} \label{sec:conclusion}
 
-Particularly successful: API/profile split;
-bottom-up semantics/lightweight semantics process;
-restricted type system; extensible definitions
+{\todo
+\begin{itemize}
+\item Successes:
+      API/Profile split (vindicated by web profile),
+      lightweight semantics process (small community, IVOA forum helps),
+      restricted type system,
+      extensible vocabularies
+      (lessons for IVOA/other projects?)
+\item Lessons learned:
+      some misfeatures: better logo would be nice,
+      JSON might have made more sense,
+      metadata/subs should be on registration,
+      Unicode?
+\item Possible future directions:
+      cross-host messaging/collaboration,
+      more secure/reliable transports (or not),
+      use outside of astronomy?
+      use from python might drive different directions/new MTypes
+         (pull rather than push semantics)
+\end{itemize}
+}
+
+{\todo
+What makes it work well is the combination of pub/sub, vague semantics
+and ease of adoption (leading to wide uptake).  This means it can go
+places that earlier protocols like XPA couldn't.
+}
   
 
 \section*{References}
