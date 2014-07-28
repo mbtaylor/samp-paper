@@ -237,7 +237,7 @@ Clients first perform a resource discovery step to locate the Hub,
 and then {\em register\/} with it, establishing a private communication
 channel through which subsequent calls to the Hub's services can be made.
 These services include accepting metadata about the registering client,
-providing information about other participating clients,
+providing information about other registered clients,
 and forwarding {\em messages\/} to those clients.
 These messages may elicit responses, which may optionally be passed
 back to the message sender, again via the Hub.
@@ -274,19 +274,19 @@ The details of this pattern are fleshed out in a three-layer architecture:
   clients
 \end{description}
 
-It is important to understand that SAMP defines two distinct sets of
+Note that SAMP thus defines two distinct sets of
 Remote Procedure Call (RPC) operations:
 the functions declared by the Abstract API,
 concerning the mechanics of client-hub communication and message delivery,
 and SAMP Messages themselves classified by MType,
-bearing the application-level content that clients want
+bearing the application-level content that clients wish
 to exchange with each other.
 The syntax and semantics of the former are carefully defined by the
 SAMP standard, but the form and content of the latter are
 agreed outside of SAMP itself by cooperating client developers.
-By the same token, message semantics are outside the scope of the
-messaging infrastructure, so hub implementations and client toolkits
-treat all messages without regard to their semantic content.
+% By the same token, message semantics are outside the scope of the
+% messaging infrastructure, so hub implementations and client toolkits
+% treat all messages without regard to their semantic content.
 
 Because of the central r\^{o}le of the Hub in this pattern,
 it presents a single point of failure and potential bottle-neck.
@@ -300,7 +300,7 @@ For full details, see the SAMP Standard \citep{samp_std}.
 \subsection{Abstract API} \label{sec:abstractApi}
 
 The Abstract API defines the messaging capabilities of SAMP.
-It is provided in the form of a list of a dozen or so function definitions
+It takes the form of a list of a dozen or so function definitions
 with typed arguments and return values, and well-defined semantics.
 Most of these functions represent services provided by the Hub, such as
 {\tt register} (which returns information required by the
@@ -322,8 +322,8 @@ Message processing is fundamentally asynchronous from the
 receiver's point of view, so that message/response times are
 not limited to the lifetime of an RPC call in the underlying
 transport mechanism, but the Hub provides an optional synchronous
-fa\c{c}ade for clients that expect fast turnarounds and wish to
-avoid the additional complication of asynchronous processing.
+fa\c{c}ade for sending messages when clients expect fast turnaround
+and wish to avoid the additional complication of asynchronous processing.
 
 \subsubsection{Type System}
 
@@ -335,17 +335,19 @@ message responses, application metadata, and MType subscription lists.
 
 This type system contains only three types:
 string, list and map.
-The map is a set of associations of string keys with
-values that are themselves of type string, list or map.
-Structured objects are specified by the use of well-known keys in map values,
-null values are not permitted,
+A string is a sequence of 7-bit ASCII printable characters,
+a list is an ordered sequence of strings, lists or maps, and
+a map is an unordered set of associations of string keys with values
+of type string, list or map.
+Structured objects are specified by the use of well-known keys in maps,
+there is no special representation for null values,
 and non-string scalar types must be serialized as strings.
-Strings are restricted to 7-bit ASCII excluding problematic control characters.
 (Obvious) conventions are suggested for serializing
-integer, floating point and boolean values,
+integer, floating point and boolean values into string form,
 but these suggestions are provided for the convenience
 of MType definitions that wish to exchange such values without
 reinventing the wheel, and are not a normative part of the protocol.
+
 This restricted type system has been deliberately chosen to introduce
 minimal dependency on the details of
 non-core parts of the message delivery system,
@@ -361,12 +363,15 @@ outside of client control.
 % conversions were made.
 
 The type system is rich enough to represent complex structured data
-where required, but note it is not straightforward to use it for
+where required, but note it is not intended for use with
 binary data, and transmission of bulk data or large payloads
 in general is discouraged within SAMP messages in favour of
 passing URLs around instead.
-This does place an additional burden on clients,
-since to exchange bulk data not available from an existing URL
+This means that client and Hub implementations can work on the assumption
+of short message payloads.
+However it does place an additional burden on clients sending data,
+since to transmit a bulk data item (such as a table or image)
+not already available from an existing URL
 it is necessary to make it so available, for instance by writing
 bytes to a temporary file or serving them from an embedded HTTP server.
 
@@ -383,7 +388,7 @@ propagating them to downstream consumers where applicable
 A corollary is that such non-well-known keys must be defined in such
 a way that ignoring them will result in reasonable behaviour.
 The Abstract API tends to prefer maps (unordered name/value pairs)
-over ordered parameter lists, which makes this extensibility
+over ordered parameter value lists, which makes this extensibility
 pervasive throughout the messaging system,
 applying for instance to
 client metadata and subscription declarations,
@@ -405,7 +410,8 @@ with the additional entry present, so if one of those supports
 this feature then it may use the value in processing.
 The same rule applies for instance to the MType-determined
 message parameter list;
-an MType like {\tt image{\kdot}load} has a required parameter {\tt url},
+an MType like {\tt image{\kdot}load{\kdot}fits}
+has a required parameter {\tt url},
 but a sending client may add a non-standard parameter like
 {\tt colormap} (or {\tt ds9{\kdot}colormap}) alongside the well-known ones
 for the benefit of any client that happens to support it.
@@ -439,9 +445,11 @@ and the decision to use short readable strings
 instead of rigidly namespaced sequences such as URIs
 (which was the rule in PLASTIC) looks in hindsight to be a good one.
 
-Note that the widespread use of named parameters (within maps)
-rather than ordered lists makes this kind of extensibility much easier/
-more natural.
+
+%% I already said this ("tends to prefer maps")
+% Note that the transmission of parameter values as name/value pairs
+% rather than ordered value lists naturally facilitates this kind of
+% extensibility.
 
 \subsection{Profile} \label{sec:profile}
 
@@ -457,7 +465,7 @@ transport mechanism and rules for mapping the SAMP
 data types into the parameters and responses used by that mechanism.
 Second, it defines a hub discovery mechanism,
 which tells clients how to establish initial communications with the Hub,
-typically involving some authentication step.
+usually involving some authentication step.
 Particular profiles may also specify additional
 profile-specific hub or client services exposed as functions
 alongside those mandated by the Abstract API.
@@ -470,8 +478,8 @@ This uses XML-RPC\footnote{
    Documentation can be found at \url{http://www.xmlrpc.com/}.
 }
 as a transport mechanism,
-and provides hub discovery by storing the URL of the hub's XML-RPC server
-along with a secret hub-generated key in a private ``lockfile''
+and allows hub discovery by storing the URL of the hub's XML-RPC server
+along with a secret randomly generated key in a private ``lockfile''
 in the user's home directory.
 
 Version 1.3 of the standard (2012) introduced a second, the Web Profile,
@@ -555,7 +563,7 @@ For the purpose of subscription a limited wildcarding syntax is available,
 so by using the MType patterns
 {\tt image{\kdot}load{\kdot}fits}, {\tt image.*} or {\tt *}
 a client may declare interest in only the above message,
-all image-related messages, or all messages respectively.
+or all image-related messages, or all messages respectively.
 % The intention is that the naming scheme should follow a hierarchical
 % scheme organising MTypes by function; in fact MType labels have
 % been assigned somewhat haphazardly.
@@ -566,7 +574,7 @@ typically would subscribe to {\tt image{\kdot}load{\kdot}fits},
 but not to {\tt spectrum{\kdot}load{\kdot}ssa-generic}.
 A client that has an image FITS file to send can then
 either query the Hub for those clients subscribed to the image load
-message and offer its user the choice of which to send it to,
+message and offer its user the choice of which one to target,
 or {\em broadcast} the image load message to the Hub, which will
 take care of forwarding it to all (and only) the image-capable clients.
 
@@ -603,8 +611,8 @@ These are addressed in the following subsections.
 
 The most obvious approach for providing message-based control
 of an application
-is to identify (at least some of) the capabilities it provides and
-provide a messaging interface with parameters and return values
+is to identify (at least some of) the capabilities it offers and
+define a messaging interface with parameters and return values
 exposing those capabilities.  An image display application might
 expose a set of MTypes allowing image load into a new window,
 zoom configuration, colour map choice, WCS display and so on.
