@@ -266,8 +266,7 @@ If a client has no further use for SAMP communications
 
 The details of this pattern are fleshed out in a three-layer architecture:
 \begin{description}
-\item[Abstract API:] defines the services provided by the Hub and clients;
-  this goes along with an associated {\bf Type System}
+\item[Abstract API:] defines the services provided by the Hub and clients
 \item[Profile:] maps the Abstract API to specific communication operations,
   such as bytes on the wire
 \item[MTypes:] provide semantics for the actual messages exchanged between
@@ -293,8 +292,14 @@ it presents a single point of failure and potential bottle-neck.
 However, SAMP messages are usually short,
 and in practice performance issues have not generally been apparent.
 
-The following subsections describe each of the three architectural layers,
-along with some of the considerations that influenced their design.
+The following subsections present a more detailed account of
+these ideas, along with some of the considerations that influenced
+their design.
+Sections \ref{sec:abstractApi}, \ref{sec:profile} and \ref{sec:mtypes}
+describe the three architectural layers,
+and sections \ref{sec:typeSystem} and \ref{sec:extVocabs}
+describe the underlying type system and how it is used to underpin
+extensibility in SAMP.
 For full details, see the SAMP Standard \citep{samp_std}.
 
 \subsection{Abstract API} \label{sec:abstractApi}
@@ -325,131 +330,8 @@ transport mechanism, but the Hub provides an optional synchronous
 fa\c{c}ade for sending messages when clients expect fast turnaround
 and wish to avoid the additional complication of asynchronous processing.
 
-\subsubsection{Type System}
-
-Alongside the Abstract API's function list
-goes a type system defining the types of value it  uses,
-as well as rules for encoding various structured objects
-using these types: message objects themselves, success and failure
-message responses, application metadata, and MType subscription lists.
-
-This type system contains only three types:
-string, list and map.
-A string is a sequence of 7-bit ASCII printable characters,
-a list is an ordered sequence of strings, lists or maps, and
-a map is an unordered set of associations of string keys with values
-of type string, list or map.
-Structured objects are specified by the use of well-known keys in maps,
-there is no special representation for null values,
-and non-string scalar types must be serialized as strings.
-(Obvious) conventions are suggested for serializing
-integer, floating point and boolean values into string form,
-but these suggestions are provided for the convenience
-of MType definitions that wish to exchange such values without
-reinventing the wheel, and are not a normative part of the protocol.
-
-This restricted type system has been deliberately chosen to introduce
-minimal dependency on the details of
-non-core parts of the message delivery system,
-in particular profile-specific transport mechanisms and language-specific
-client libraries.
-This both reduces the restrictions on what languages and transport layers
-may be used with SAMP, and ensures that values transmitted will
-not be modified during processing by parts of the messaging system
-outside of client control.
-
-% Experience with PLASTIC showed that in loosely-typed languages
-% such as Python and Perl it was difficult to control where type
-% conversions were made.
-
-The type system is rich enough to represent complex structured data
-where required, but note it is not intended for use with
-binary data, and transmission of bulk data or large payloads
-in general is discouraged within SAMP messages in favour of
-passing URLs around instead.
-This means that client and Hub implementations can work on the assumption
-of short message payloads.
-However it does place an additional burden on clients sending data,
-since to transmit a bulk data item (such as a table or image)
-not already available from an existing URL
-it is necessary to make it so available, for instance by writing
-bytes to a temporary file or serving them from an embedded HTTP server.
-
-\subsubsection{Extensible Vocabularies}
-
-Extensibility is built into this system via the notion of an
-{\em extensible vocabulary} used when representing structured objects.
-
-Structured objects are represented as maps with well-known keys,
-but the rule is that additional keys are always permitted,
-and that hubs and clients must ignore any keys they do not understand,
-propagating them to downstream consumers where applicable
-(compare the NDF extension architecture described in \citet{sgp38}).
-A corollary is that such non-well-known keys must be defined in such
-a way that ignoring them will result in reasonable behaviour.
-The Abstract API tends to prefer maps (unordered name/value pairs)
-over ordered parameter value lists, which makes this extensibility
-pervasive throughout the messaging system,
-applying for instance to
-client metadata and subscription declarations,
-message transmission information,
-and MType-specified message parameter lists and return values.
-
-For instance, a client sending a message must pass it to the Hub
-as a map with two required keys:
-{\tt samp{\kdot}mtype} giving the MType label and
-{\tt samp{\kdot}params} giving the MType-specified parameter list
-(itself a map).
-But a client may optionally insert additional non-standard key/value pairs
-into that map, for instance using a non-standard key {\tt priority}
-to associate a particular priority level with the message.
-If the Hub happens to support this non-standard feature,
-it is able to treat the message specially in view of this declaration;
-in any case it will propagate the message to recipient clients
-with the additional entry present, so if one of those supports
-this feature then it may use the value in processing.
-The same rule applies for instance to the MType-determined
-message parameter list;
-an MType like {\tt image{\kdot}load{\kdot}fits}
-has a required parameter {\tt url},
-but a sending client may add a non-standard parameter like
-{\tt colormap} (or {\tt ds9{\kdot}colormap}) alongside the well-known ones
-for the benefit of any client that happens to support it.
-Clients can therefore piggy-back experimental or application-specific
-instructions on top of generic messages to achieve more detailed control
-where available, falling back to the baseline functionality if it is not.
-Using this extensibility pattern, new or enhanced features of 
-particular MTypes or of the protocol itself can be prototyped 
-very easily, requiring no changes to the SAMP standard or infrastructure
-implementation beyond those components actually using
-the non-standard features,
-and imposing no negative impact on existing messaging operations.
-If they are found to be useful, they may be adopted in the future
-as (most likely optional) well-known keys alongside the original ones.
-
-Some associated namespacing rules apply.
-Well-known keys defined by the SAMP standard are in the reserved {\tt samp}
-namespace, meaning they begin with the string ``{\tt samp.}''.
-When introducing non-standard keys it is not permitted to use this
-namespace, but any other syntactically legal string is allowed.
-The special namespace {\tt x-samp} is available
-for keys proposed for future incorporation into the standard,
-and hubs and clients should treat keys which differ 
-only in the substitution of {\tt samp} for {\tt x-samp} as identical,
-to ease standardisation of prototype features.
-In the case of MType parameters and return values,
-which are mostly not defined by SAMP itself, there is no reserved namespace.
-These rules do not defend against all possibility of namespace clashes,
-but in practice that has not been a problem,
-and the decision to use short readable strings
-instead of rigidly namespaced sequences such as URIs
-(which was the rule in PLASTIC) looks in hindsight to be a good one.
 
 
-%% I already said this ("tends to prefer maps")
-% Note that the transmission of parameter values as name/value pairs
-% rather than ordered value lists naturally facilitates this kind of
-% extensibility.
 
 \subsection{Profile} \label{sec:profile}
 
@@ -577,6 +459,134 @@ either query the Hub for those clients subscribed to the image load
 message and offer its user the choice of which one to target,
 or {\em broadcast} the image load message to the Hub, which will
 take care of forwarding it to all (and only) the image-capable clients.
+
+\subsection{Type System} \label{sec:typeSystem}
+
+Supporting the function list defined by the Abstract API
+and the parameters and return values specified by MTypes
+is a type system defining the types of value permitted,
+as well as rules for encoding various structured objects
+using these types: message objects themselves, success and failure
+message responses, application metadata, and MType subscription lists.
+
+This system contains only three types:
+string, list and map.
+A string is a sequence of 7-bit ASCII printable characters,
+a list is an ordered sequence of strings, lists or maps, and
+a map is an unordered set of associations of string keys with values
+of type string, list or map.
+Structured objects are specified by the use of well-known keys in maps,
+there is no special representation for null values,
+and non-string scalar types must be serialized as strings.
+(Obvious) conventions are suggested for serializing
+integer, floating point and boolean values into string form,
+but these suggestions are provided for the convenience
+of MType definitions that wish to exchange such values without
+reinventing the wheel, and are not a normative part of the protocol.
+
+This restricted type system has been deliberately chosen to introduce
+minimal dependency on the details of
+non-core parts of the message delivery system,
+in particular profile-specific transport mechanisms and language-specific
+client libraries.
+This both reduces the restrictions on what languages and transport layers
+may be used with SAMP, and ensures that values transmitted will
+not be modified during processing by parts of the messaging system
+outside of client control.
+
+% Experience with PLASTIC showed that in loosely-typed languages
+% such as Python and Perl it was difficult to control where type
+% conversions were made.
+
+The type system is rich enough to represent complex structured data
+where required, but note it is not intended for use with
+binary data, and transmission of bulk data or large payloads
+in general is discouraged within SAMP messages in favour of
+passing URLs around instead.
+This means that client and Hub implementations can work on the assumption
+of short message payloads.
+However it does place an additional burden on clients sending data,
+since to transmit a bulk data item (such as a table or image)
+not already available from an existing URL
+it is necessary to make it so available, for instance by writing
+bytes to a temporary file or serving them from an embedded HTTP server.
+
+\subsection{Extensible Vocabularies} \label{sec:extVocabs}
+
+Extensibility is built into this system via the notion of an
+{\em extensible vocabulary} used when representing structured objects.
+
+Structured objects are represented as maps with well-known keys,
+but the rule is that additional keys are always permitted,
+and that hubs and clients must ignore any keys they do not understand,
+propagating them to downstream consumers where applicable
+(compare the NDF extension architecture described in \citet{sgp38}).
+A corollary is that such non-well-known keys must be defined in such
+a way that ignoring them will result in reasonable behaviour.
+The Abstract API tends to prefer maps (unordered name/value pairs)
+over ordered parameter value lists, which makes this extensibility
+pervasive throughout the messaging system,
+applying for instance to
+client metadata and subscription declarations,
+message transmission information,
+and MType-specified message parameter lists and return values.
+
+For instance, a client sending a message must pass it to the Hub
+as a map with two required keys:
+{\tt samp{\kdot}mtype} giving the MType label and
+{\tt samp{\kdot}params} giving the MType-specified parameter list
+(itself a map).
+But a client may optionally insert additional non-standard key/value pairs
+into that map, for instance using a non-standard key {\tt priority}
+to associate a particular priority level with the message.
+If the Hub happens to support this non-standard feature,
+it is able to treat the message specially in view of this declaration;
+in any case it will propagate the message to recipient clients
+with the additional entry present, so if one of those supports
+this feature then it may use the value in processing.
+The same rule applies for instance to the MType-determined
+message parameter list;
+an MType like {\tt image{\kdot}load{\kdot}fits}
+has a required parameter {\tt url},
+but a sending client may add a non-standard parameter like
+{\tt colormap} (or {\tt ds9{\kdot}colormap}) alongside the well-known ones
+for the benefit of any client that happens to support it.
+Clients can therefore piggy-back experimental or application-specific
+instructions on top of generic messages to achieve more detailed control
+where available, falling back to the baseline functionality if it is not.
+Using this extensibility pattern, new or enhanced features of 
+particular MTypes or of the protocol itself can be prototyped 
+very easily, requiring no changes to the SAMP standard or infrastructure
+implementation beyond those components actually using
+the non-standard features,
+and imposing no negative impact on existing messaging operations.
+If they are found to be useful, they may be adopted in the future
+as (most likely optional) well-known keys alongside the original ones.
+
+Some associated namespacing rules apply.
+Well-known keys defined by the SAMP standard are in the reserved {\tt samp}
+namespace, meaning they begin with the string ``{\tt samp.}''.
+When introducing non-standard keys it is not permitted to use this
+namespace, but any other syntactically legal string is allowed.
+The special namespace {\tt x-samp} is available
+for keys proposed for future incorporation into the standard,
+and hubs and clients should treat keys which differ 
+only in the substitution of {\tt samp} for {\tt x-samp} as identical,
+to ease standardisation of prototype features.
+In the case of MType parameters and return values,
+which are mostly not defined by SAMP itself, there is no reserved namespace.
+
+%% I already alluded to this (Interoperability design)
+% These rules do not defend against all possibility of namespace clashes,
+% but in practice that has not been a problem,
+% and the decision to use short readable strings
+% instead of rigidly namespaced sequences such as URIs
+% (which was the rule in PLASTIC) looks in hindsight to be a good one.
+
+%% I already said this ("tends to prefer maps")
+% Note that the transmission of parameter values as name/value pairs
+% rather than ordered value lists naturally facilitates this kind of
+% extensibility.
 
 \section{Use in Practice} \label{sec:usage}
 
