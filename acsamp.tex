@@ -207,6 +207,12 @@ factor in this.
 However the communications are, by design, simple enough that
 basic SAMP use is not hard to achieve given only an XML parser
 and HTTP access capabilities.
+Ease of use by end users is equally important,
+so that those running analysis tools
+can benefit from the integration capailities that SAMP provides
+without needing to perform expert configuration
+(ideally, any explicit setup at all) or to understand the details
+of the messaging system.
 
 Third, flexibility and extensibility.
 Building into the system the capability to use it in ways
@@ -590,34 +596,78 @@ which are mostly not defined by SAMP itself, there is no reserved namespace.
 
 \section{Use in Practice} \label{sec:usage}
 
-\subsection{Client Ecosystem}
+The protocol described above is capable of supporting a wide range of
+different messaging patterns.
+For use in a particular scenario,
+a number of practical considerations must also be worked out.
+This section discusses how the framework has been applied to date
+to support the original goal of helping to integrate data analysis
+tools used by astronomers.
+% Note that other usage patterns are also possible both within and
+% outside of astronomical use.
 
-{\todo tolerance of failure, hub startup/shutdown handling}
+Section \ref{sec:hubProvision} explains how hub provision is managed,
+section \ref{sec:messageSemantics} describes some common patterns of
+message semantics, and
+section \ref{sec:mtypeProcess} addresses the social mechanisms by which
+these are agreed on by the SAMP community.
+Section \ref{sec:software} reviews the existing landscape of
+SAMP infrastructure software and SAMP-aware tools, and
+Section \ref{sec:examples} provides some concrete examples of it in action.
 
-{\todo move some of the MType stuff up here?}
+\subsection{Hub Provision} \label{sec:hubProvision}
 
-\subsection{Existing Software}
+SAMP's star topology means that a Hub (in most cases, exactly one Hub)
+must be running for any messaging to take place.
+Ideally, a independent Hub process would be started
+as part of user session setup to ensure its constant availability.
+While this is quite possible and appropriate in some scenarios,
+even the minimal configuration required to establish it
+(a hub startup line in a session startup file)
+requires the kind of explicit user action which cannot always be relied upon.
+Simply put, if the functionality doesn't show up in the user interface
+with zero user effort, most users will never discover it.
 
-\subsection{MType Content}
+It is common practice therefore, though by no means a requirement,
+for some SAMP-aware tools to come with an embedded hub.
+In this scenario, when a SAMP-aware tool starts up, it first checks for
+a running hub.
+If one exists, it registers with it;
+if not, and if it has the capability, it starts its own embedded Hub,
+and registers with that.
+Note that a client running an embedded Hub communicates with it in
+just the same way as with an independent one, it has no privileged access.
+Non-hub-capable clients may either check for a running Hub and connect
+automatically on startup or on explicit user request,
+or they may poll periodically for a Hub
+and connect if and when when one arises.
+The effect is that usually when two or more SAMP-aware tools are running,
+a Hub will be present and those tools will find themselves connected to it,
+enabling messaging.
+Sometimes the application hosting the embedded hub will be shut down
+during a session taking the Hub down with it,
+and in that case another application may notice the fact and start one up,
+at which point some or all previously registered clients may notice
+the new hub and re-register with it.
 
-The utility and success of a messaging infrastructure for
-a particular problem domain relies on having suitable
-message semantics to go with it.
-SAMP can only be a useful tool for astronomical data analysis
-if there exists a suitable library of MTypes for communicating
-the information that applications need in practice to exchange,
-given that any given MType is only useful if at least two,
-and preferably many, potentially cooperating clients
-understand and can act upon it.
-The description of MType syntax and handling in section \ref{sec:mtypes}
-says nothing about how such a library is to be assembled.
-There are two parts to this question:
-what kinds of messages do we want to be able to exchange,
-and what is the process by which a list of such message types
-should be arrived at and publicised.
-These are addressed in the following subsections.
+This somewhat haphazard model of hub provision does not form a
+robust platform for high-reliability messaging,
+but, in accordance with SAMP philosophy,
+operates well enough most of the time, with a minimum of user effort;
+usually, it ``just works''.
+Note that where more robust connectivity is required or can be arranged,
+an independent hub process can be explicitly managed.
 
-\subsubsection{MType Semantics}
+\subsection{MType Semantics} \label{sec:messageSemantics}
+
+In order for a messaging framework to do any useful work,
+there must be a vocabulary of messages understood by the
+applications which are going to exchange them.
+In SAMP terms that means establishing a collection of MTypes
+(section \ref{sec:mtypes}).
+Choosing the right semantics for this collection is crucial
+to enabling the messaging system to do something useful.
+\\ {\todo reword reword reword}
 
 The most obvious approach for providing message-based control
 of an application
@@ -659,7 +709,7 @@ for instance ones which have not yet been written.
 
 For uncontrolled environments in which the user selects
 the range of cooperating tools at runtime therefore,
-a ``loose integration'' model has turned out to be much more productive.
+a ``loose integration'' model has turned out to be more successful.
 This approach focuses on a messaging interface
 consisting of a fairly small number of MTypes with
 semantics that are non-client-specific and rather vague.
@@ -739,7 +789,10 @@ model has proven the most productive,
 and able to support ways of working that have not been possible
 using other available messaging systems.
 
-\subsubsection{MType Definition Process}
+\subsection{MType Definition Process} \label{sec:mtypeProcess}
+
+A suitable collection of MTypes must not only exist but be known by
+potential message senders in order for useful messaging to take place.
 
 In the case of application-specific MTypes, the documentation of
 available MTypes and their definitions is clearly
@@ -758,8 +811,8 @@ However, for well-known MTypes intended for unrestricted use,
 for instance of the loose-coupling variety described above,
 some public process is required to establish
 and publicise their definitions, so that client developers can
-both contribute their requirements for functionality, and become aware
-of the conventions in use by other tools.
+both become aware of the conventions currently in use by other tools,
+and contribute their requirements for new or modified functionality.
 
 One possibility
 is to decide on a fixed list to form part of the SAMP standard.
@@ -797,6 +850,11 @@ This was intended as a provisional measure to be reviewed and
 modified as required, but, six years later, the need for a more
 formal process has not been apparent, and there are no current
 plans to modify this arrangement.
+
+\subsection{Existing Software} \label{sec:software}
+
+\subsection{Examples of Use} \label{sec:examples}
+
 
 \section{Conclusions} \label{sec:conclusion}
 
