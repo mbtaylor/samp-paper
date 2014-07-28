@@ -68,6 +68,9 @@ Does it state the obvious?
 Should there be a concrete example?
 Is it too specific to a single use case (maybe more like history)?
 The adass\_xxi intro is much more focussed, but don't want to cut'n'paste.
+
+Maybe the intro needs to say: success requires a capable architecture,
+useful semantics, and take-up in practice
 }
 
 
@@ -142,14 +145,14 @@ written in different languages and running in different processes.
 Such applications can thus be made to appear to the user
 as a loosely integrated suite of cooperating tools,
 providing facilities such as data exchange, linked views and
-remote control between each other.
+peer-to-peer or client-server remote control.
 Although communication between interactive desktop tools was the
 original stimulus for what is now SAMP, the framework is flexible
 enough to support other usage patterns as well.
 
 Two previous papers on SAMP have been presented at the ADASS conference
 series:
-\citet{adassxxi_paper} outlines the architecture and explains
+\citet{adassxxi_paper} briefly outlines the architecture and explains
 the Web Profile, and \citet{adassxxii_bof} lists some existing
 client libraries.
 This paper discusses the protocol design and communication model
@@ -160,7 +163,7 @@ Section \ref{sec:history} outlines its evolution from
 the earlier PLASTIC protocol,
 section \ref{sec:protocol} presents a description of the protocol itself
 along with some of the thinking for the design behind it,
-section \ref{sec:usage} gives some examples of its use in practice, and
+section \ref{sec:usage} considers its use in practice, and
 section \ref{sec:conclusion} concludes by reviewing the current status
 and possible future directions for SAMP.
 
@@ -175,26 +178,56 @@ and possible future directions for SAMP.
 }
 
 
-{\todo
-\section{Design Principles} \label{sec:design}
+\section{Interoperable Design} \label{sec:design}
 
-Many factors fed into the design of SAMP,
-including positive and negative lessons learned
-from the experience of PLASTIC, 
-general good practice etc.
-The overriding objective here is to foster interoperability in practice,
-which requires wide take-up of the standard in candidate applications.
+The overriding objective for the design of SAMP
+has been to foster interoperability in practice.
+This requires not just a messaging system with sufficient communication
+capabilities, but also one which developers of popular analysis tools,
+and ideally private scripts as well,
+are actually willing and able to integrate into their software.
+To achieve this, a number of principles
+have been followed as much as possible.
 
-To achieve this, the following principles were followed as much as possible:
-\begin{itemize}
-\item Ease of adoption
-\item Platform independence
-\item Extensibility
-\item Pragmatism (over robustness, security, use short strings not URIs,
-                  tolerant of failure ...)
-\end{itemize}
-}
+In the first place, it is as much as possible platform independent.
+The definition of the protocol is not dependent on or biassed
+towards use of particular implementation languages or operating systems.
+It differs in this respect from the earlier PLASTIC protocol,
+which while accessible from any language was in parts defined with
+reference to the Java platform, creating a perception which may
+have discouraged takeup from the non-Java community.
 
+Second, ease of adoption.
+Application authors have in practice found basic use of 
+SAMP to require little implementation effort.
+In practice, availability of SAMP client libraries
+developed within the SAMP community
+for a number of implementation languages have been an important
+factor in this.
+However the communications are, by design, simple enough that
+basic SAMP use is not hard to achieve given only an XML parser
+and HTTP access capabilities.
+
+Third, flexibility and extensibility.
+Building into the system the capability to use it in ways
+driven by the requirements of the client tools rather than
+just those forseen by the standard authors increases its likely usefulness.
+
+Finally, the approach has been above all pragmatic, favouring
+the straightforward over the rigorous in cases of conflict.
+For instance message delivery is not guaranteed, but can be 
+expected to work most of the time.  The Standard Profile offers
+a security model which will prevent casual interference
+but may be vulnerable to determined attack.  Semantics are tagged
+using short readable strings on the assumption of sensible choices
+rather than URIs with guaranteed private namespaces.
+
+These principles and their application, in some cases informed
+by positive and negative lessons from the experience of PLASTIC,
+might not be appropriate for all contexts
+but have led to a messaging infrastructure which ought to be easy
+for client developers to understand and adopt, and have in fact
+been widely taken up.
 
 \section{Protocol Description} \label{sec:protocol}
 
