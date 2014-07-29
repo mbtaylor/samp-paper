@@ -93,15 +93,16 @@ To extract scientific meaning from the data it is usually necessary
 to exploit these linkages between data items as well as the
 internal structure of each.
 
-The working astronomer therefore uses a selection of different tools,
+The working astronomer therefore uses a selection
+of different software items,
 each specialising in a particular type of data or manipulation,
 for different data sets and different tasks,
 and has to integrate these together in a way that takes account of
 the relationships of the data items under consideration.
 This situation is not specific to the Virtual Observatory,
 but the wealth of heterogeneous data available from the VO,
-sometimes requiring the use of additional data discovery tools,
-accentuates these issues in the VO context.
+sometimes requiring the use of additional tools for data discovery
+and acquisition, accentuates these issues in the VO era.
 
 For batch or pipeline-type processing the required tool integration
 is usually, in terms of data flow, fairly straightforward:
@@ -111,8 +112,8 @@ often under the control of a script of some kind.
 
 During the exploratory or interactive phase of data analysis however,
 this traditional model of tool integration is less satisfactory.
-Within a given GUI analysis
-tool it is usual to interact with the data using
+Within a given GUI analysis application
+it is usual to interact with the data using
 mouse and keyboard gestures to perform actions like selection or
 navigation with instant visual feedback, in many cases with some
 kind of internal linkage between different data views.
@@ -168,7 +169,7 @@ section \ref{sec:usage} considers its use in practice, and
 section \ref{sec:conclusion} concludes by reviewing the current status
 and possible future directions for SAMP.
 For the complete and definitive details of the protocol,
-see the standard document itself \citep{samp_std}.
+the reader is referred to the standard document itself \citep{samp_std}.
 
 {\todo
 \section{History} \label{sec:history}
@@ -182,7 +183,7 @@ see the standard document itself \citep{samp_std}.
 }
 
 
-\section{Interoperable Design} \label{sec:design}
+\section{Design for Interoperability} \label{sec:design}
 
 The overriding objective for the design of SAMP
 has been to foster interoperability in practice.
@@ -191,15 +192,15 @@ capabilities, but also one which developers of popular analysis tools,
 and ideally private scripts as well,
 are actually willing and able to integrate into their software.
 To achieve this, a number of principles
-have been followed as much as possible.
+have been followed.
 
-In the first place, it is as much as possible platform independent.
+In the first place, it is as far as possible platform independent.
 The definition of the protocol is not dependent on or biassed
 towards use of particular implementation languages or operating systems.
 It differs in this respect from the earlier PLASTIC protocol,
 which while accessible from any language was in parts defined with
 reference to the Java platform, creating a perception which may
-have discouraged takeup from the non-Java community.
+have discouraged uptake by non-Java developers.
 
 Second, ease of adoption.
 Application authors have in practice found basic use of 
@@ -213,7 +214,7 @@ basic SAMP use is not hard to achieve given only an XML parser
 and HTTP access capabilities.
 Ease of use by end users is equally important,
 so that those running analysis tools
-can benefit from the integration capailities that SAMP provides
+can benefit from the integration capabilities that SAMP provides
 without needing to perform expert configuration
 (ideally, any explicit setup at all) or to understand the details
 of the messaging system.
@@ -235,9 +236,9 @@ rather than URIs with guaranteed private namespaces.
 These principles and their application, in some cases informed
 by positive and negative lessons from the experience of PLASTIC,
 might not be appropriate for all contexts
-but have led to a messaging infrastructure which ought to be easy
-for client developers to understand and adopt, and have in fact
-been widely taken up.
+but have led to a messaging infrastructure
+which ought to be easy for client developers to understand and adopt,
+and which has in fact been widely taken up.
 
 \section{Protocol Description} \label{sec:protocol}
 
@@ -274,7 +275,7 @@ will fail if the target client has not appropriately subscribed.
 If a client has no further use for SAMP communications
 (for instance on application exit), it can and should {\em unregister\/}.
 
-The details of this pattern are fleshed out in a three-layer architecture:
+The details of this pattern are codified in a three-layer architecture:
 \begin{description}
 \item[Abstract API:] defines the services provided by the Hub and clients
 \item[Profile:] maps the Abstract API to specific communication operations,
@@ -306,18 +307,18 @@ The following subsections present a more detailed account of
 these ideas, along with some of the considerations that influenced
 their design.
 Sections \ref{sec:abstractApi}, \ref{sec:profile} and \ref{sec:mtypes}
-describe the three architectural layers,
+describe the three architectural layers listed above,
 and sections \ref{sec:typeSystem} and \ref{sec:extVocabs}
 describe the underlying type system and how it is used to underpin
 extensibility in SAMP.
-For full details, see the SAMP Standard \citep{samp_std}.
 
 \subsection{Abstract API} \label{sec:abstractApi}
 
 The Abstract API defines the messaging capabilities of SAMP.
 It takes the form of a list of a dozen or so function definitions
 with typed arguments and return values, and well-defined semantics.
-Most of these functions represent services provided by the Hub, such as
+Most of these functions represent services provided by the Hub,
+for instance
 {\tt register} (which returns information required by the
 client for future communications, typically an identification token)
 or {\tt notifyAll} (which requests forwarding a given message to
@@ -444,7 +445,7 @@ defined like this:
     \hspace*{1em} None.
 \end{quote}
 
-The label is a short hierarchical string composed of atoms separated
+The name is a short hierarchical string composed of atoms separated
 by the ``.'' character.
 As well as identifying to a recipient the type of an incoming message,
 it is used by clients to {\em subscribe\/} to messages, that is to
@@ -493,8 +494,8 @@ of MType definitions that wish to exchange such values without
 reinventing the wheel, and are not a normative part of the protocol.
 
 This restricted type system has been deliberately chosen to introduce
-minimal dependency on the details of
-non-core parts of the message delivery system,
+minimal dependency of messaging behaviour on the details of
+non-core parts of the delivery system,
 in particular profile-specific transport mechanisms and language-specific
 client libraries.
 This both reduces the restrictions on what languages and transport layers
@@ -532,7 +533,7 @@ from non-Unicode-capable environments such as Fortran, IDL and
 and some shell scripts.
 This has not caused known problems to date, but inability to handle
 Unicode text without additional encoding could prove awkward in
-some contexts.
+some cases.
 
 \subsection{Extensible Vocabularies} \label{sec:extVocabs}
 
@@ -654,10 +655,9 @@ if not, and if it has the capability, it starts its own embedded Hub,
 and registers with that.
 Note that a client running an embedded Hub communicates with it in
 just the same way as with an independent one, it has no privileged access.
-Non-hub-capable clients may either check for a running Hub and connect
-automatically on startup or on explicit user request,
-or they may poll periodically for a Hub
-and connect if and when when one arises.
+Non-hub-capable clients may choose to check for a running Hub and connect
+on startup, on explicit user request, or when periodic polling indicates
+that one has become available.
 The effect is that usually when two or more SAMP-aware tools are running,
 a Hub will be present and those tools will find themselves connected to it,
 enabling messaging.
@@ -669,11 +669,11 @@ the new hub and re-register with it.
 
 This somewhat haphazard model of hub provision does not form a
 robust platform for high-reliability messaging,
-but, in accordance with SAMP philosophy,
+but, in accordance with SAMP's pragmatic approach,
 operates well enough most of the time, with a minimum of user effort;
 usually, it ``just works''.
-Note that where more robust connectivity is required or can be arranged,
-an independent hub process can be explicitly managed.
+Note that where explicit control of an independent hub process
+can be arranged, more robust connectivity will result.
 
 \subsection{MType Semantics} \label{sec:messageSemantics}
 
@@ -704,7 +704,8 @@ But if the set of tools in use at runtime is chosen by a
 user from an open-ended set
 rather than mandated by a developer, the identity of the
 partner client or clients is not known in advance.
-In general, different applications have different capability sets
+In general, different applications even of similar types
+have different capability sets
 and internal data models, and these cannot readily be encompassed
 by any single general abstraction.
 Different image display tools
@@ -785,7 +786,9 @@ the {\em lingua franca\/}, and the only commonly-used MType is
 {\tt image{\kdot}load{\kdot}fits}.
 For tabular data, clients are strongly encouraged to use
 {\tt table{\kdot}load{\kdot}votable} even if it means translating to/from
-some other format; however other {\tt table{\kdot}load.*} variants are in use,
+some other format;
+however other {\tt table{\kdot}load.*} variants are in use
+for specialist purposes,
 for instance for the CDF format\footnote{\url{http://cdf.gsfc.nasa.gov/}},
 which though tabular is
 not readily translated to VOTable without loss of information,
@@ -794,7 +797,7 @@ In the case of spectra, for various reasons related to the
 form in which spectral data is typically obtained and
 the typical capabilities of spectrum-capable clients,
 the relevant MType is {\tt spectrum{\kdot}load{\kdot}ssa-generic},
-which allows any format to be used for the spectral data,
+which permits any format to be used for the spectral data,
 with additional parameters specifying
 the format actually in use.
 
@@ -817,7 +820,7 @@ These typically provide functionality that only makes sense for
 a given tool, and make use of a suitably specific namespace,
 for instance {\tt script{\kdot}aladin{\kdot}send},
 which allows external applications to control Aladin
-\citep{2000A&AS..143...33B} using commands in its scripting language.
+\citep{2000A&AS..143...33B} by sending commands in its scripting language.
 
 Developers are also free to define their own MTypes for use privately
 or in some closed group with locally agreed conventions for documentation,
@@ -872,6 +875,8 @@ plans to modify this arrangement.
 Since its first version in 2008, a wide range of SAMP-enabled
 infrastructure and application software has become available.
 
+{\todo I don't think we want to list SAMP software by name do we?}
+
 Of infrastructure sofware that is actively maintained at the time of writing,
 interchangeable Hub implementations exist in Java and Python,
 and client toolkits in Java, Python, C and Javascript.
@@ -881,7 +886,6 @@ Validation, debugging and development support tools are also available.
 Historical, partial or experimental SAMP functionality has
 also appeared in other languages including Perl, C Sharp and IDL.
 
-% I don't think there's much point trying to list them all by name??
 Applications using SAMP number in the dozens, and include
 GUI analysis tools for images, catalogues, spectra, SEDs,
 time series and interferometry data,
@@ -922,11 +926,11 @@ and ease of adoption leading to widespread uptake.
 
 SAMP's flexibility means that it is capable of supporting other
 communication models, some in more marginal use now
-and some which may be explored more in the future.
+and some which may be explored further in the future.
 Introducing new Profiles, different MType libraries or
 alternative hub provision arrangements could render the same
 infrastructure suitable for contexts with different
-requirements for reliability, security or efficiency.
+requirements for reliability, security or scalability.
 Another possible scenario is inter-host messaging to
 support collaborative work;
 this option has been under consideration throughout SAMP's history
@@ -936,13 +940,14 @@ received much user attention.
 Despite its development history, there is nothing in the protocol
 specific to either the Virtual Observatory or astronomy,
 so use in other problem domains is quite feasible,
-though no effort is currently being deployed in this direction.
+though the authors are not aware of effort currently being
+deployed in this direction.
 
 SAMP's design has been informed by the requirements and experimentation
 of the SAMP developer community, largely within the context of
 the Virtual Observatory,
 including positive and negative lessons learned from its predecessor PLASTIC.
-Some aspects of this design that have been particularly successful
+Some aspects of this design that have proved particularly successful
 include
 the decoupling of architectural concerns into API, transport
 mechanism and semantics,
