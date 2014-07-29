@@ -155,24 +155,28 @@ series:
 \citet{adassxxi_paper} briefly outlines the architecture and explains
 the Web Profile, and \citet{adassxxii_bof} lists some existing
 client libraries.
-This paper discusses the protocol design and communication model
-in somewhat more detail, though at a higher level than given by the
-standard itself \citep{samp_std}, and reviews existing and current
-usage, considering lessons learned and possible future directions.
-Section \ref{sec:history} outlines its evolution from
-the earlier PLASTIC protocol,
+The current paper discusses the protocol,
+its communication model, and its current usage
+in sufficient detail to understand the design decisions taken
+and their consequences.
+Section \ref{sec:history} outlines the evolution of SAMP from
+its predecessor PLASTIC,
+section \ref{sec:design} outlines some high-level design principles,
 section \ref{sec:protocol} presents a description of the protocol itself
-along with some of the thinking for the design behind it,
+along with some of the thinking behind it,
 section \ref{sec:usage} considers its use in practice, and
 section \ref{sec:conclusion} concludes by reviewing the current status
 and possible future directions for SAMP.
+For the complete and definitive details of the protocol,
+see the standard document itself \citep{samp_std}.
 
 {\todo
 \section{History} \label{sec:history}
  
   \begin{itemize}
+  \item XPA ... other existing messaging systems ...
   \item SC4DEVO ... VOTech ... VODesktop ... AstroGrid Runtime ...
-  \item PLASTIC\citep{plastic_note} ... pub/sub ... XML-RPC/Java/RMILite
+  \item PLASTIC\citep{plastic_note} ... pub/sub ... XML-RPC/Java/RMILite ...
   \item Lessons learned from PLASTIC
   \end{itemize}
 }
@@ -335,8 +339,6 @@ not limited to the lifetime of an RPC call in the underlying
 transport mechanism, but the Hub provides an optional synchronous
 fa\c{c}ade for sending messages when clients expect fast turnaround
 and wish to avoid the additional complication of asynchronous processing.
-
-
 
 
 \subsection{Profile} \label{sec:profile}
@@ -508,14 +510,29 @@ The type system is rich enough to represent complex structured data
 where required, but note it is not intended for use with
 binary data, and transmission of bulk data or large payloads
 in general is discouraged within SAMP messages in favour of
-passing URLs around instead.
-This means that client and Hub implementations can work on the assumption
+passing URLs around instead, meaning that
+client and Hub implementations can work on the assumption
 of short message payloads.
-However it does place an additional burden on clients sending data,
+
+This convention of out-of-band bulk data transfer does place
+an additional burden on sending clients however,
 since to transmit a bulk data item (such as a table or image)
 not already available from an existing URL
 it is necessary to make it so available, for instance by writing
 bytes to a temporary file or serving them from an embedded HTTP server.
+It can also present complications if the sending and receiving client
+are not able to see the same URLs, for instance due to different security
+contexts; in this case, additional Hub services may be required to
+assist with data transfer between domains.
+
+Note also that the string type does not natively accommodate Unicode text,
+including XML.
+The restriction to 7-bit ASCII is driven by the requirement for use
+from non-Unicode-capable environments such as Fortran, IDL and
+and some shell scripts.
+This has not caused known problems to date, but inability to handle
+Unicode text without additional encoding could prove awkward in
+some contexts.
 
 \subsection{Extensible Vocabularies} \label{sec:extVocabs}
 
@@ -660,14 +677,13 @@ an independent hub process can be explicitly managed.
 
 \subsection{MType Semantics} \label{sec:messageSemantics}
 
-In order for a messaging framework to do any useful work,
-there must be a vocabulary of messages understood by the
+A messaging framework only serves any purpose if there exists
+a vocabulary of messages understood by the
 applications which are going to exchange them.
-In SAMP terms that means establishing a collection of MTypes
-(section \ref{sec:mtypes}).
+In SAMP terms that means establishing a collection of
+more or less well-known MTypes (section \ref{sec:mtypes}).
 Choosing the right semantics for this collection is crucial
-to enabling the messaging system to do something useful.
-\\ {\todo reword reword reword}
+to the utility and character of the messaging system in practice.
 
 The most obvious approach for providing message-based control
 of an application
@@ -853,39 +869,113 @@ plans to modify this arrangement.
 
 \subsection{Existing Software} \label{sec:software}
 
+Since its first version in 2008, a wide range of SAMP-enabled
+infrastructure and application software has become available.
+
+Of infrastructure sofware that is actively maintained at the time of writing,
+interchangeable Hub implementations exist in Java and Python,
+and client toolkits in Java, Python, C and Javascript.
+% (since Version 0.4 the Python implementation has formed part of
+% the Astropy package, \citet{2013A&A...558A..33A}).
+Validation, debugging and development support tools are also available.
+Historical, partial or experimental SAMP functionality has
+also appeared in other languages including Perl, C Sharp and IDL.
+
+% I don't think there's much point trying to list them all by name??
+Applications using SAMP number in the dozens, and include
+GUI analysis tools for images, catalogues, spectra, SEDs,
+time series and interferometry data,
+observation tools,
+outreach applications,
+command-line and graphical data access and manipulation suites,
+interactive processing environments,
+web archives either exposing simple results pages
+or offering sophisticated browser functionality,
+throwaway user scripts,
+and more.
+It is probably now the case that most astronomical applications
+that can benefit from interaction with other such tools
+include at least a basic SAMP capability,
+though it's harder to ascertain to what extent
+this functionality is used in practice.
+
 \subsection{Examples of Use} \label{sec:examples}
+
+{\todo one or two short examples? maybe with screenshots??}
 
 
 \section{Conclusions} \label{sec:conclusion}
 
-{\todo
-\begin{itemize}
-\item Successes:
-      API/Profile split (vindicated by web profile),
-      lightweight semantics process (small community, IVOA forum helps),
-      restricted type system,
-      extensible vocabularies
-      (lessons for IVOA/other projects?)
-\item Lessons learned:
-      some misfeatures: better logo would be nice,
-      JSON might have made more sense,
-      metadata/subs should be on registration,
-      Unicode?
-\item Possible future directions:
-      cross-host messaging/collaboration,
-      more secure/reliable transports (or not),
-      use outside of astronomy?
-      use from python might drive different directions/new MTypes
-         (pull rather than push semantics)
-\end{itemize}
-}
+SAMP provides a flexible and easy to use messaging framework,
+deployed in much current astronomical software,
+which supports various models of inter-tool communication.
 
-{\todo
-What makes it work well is the combination of pub/sub, vague semantics
-and ease of adoption (leading to wide uptake).  This means it can go
-places that earlier protocols like XPA couldn't.
-}
-  
+The most productive of these models to date has been loose coupling
+between a user-selected set of independently developed
+interactive data acquisition and analysis applications,
+to deliver functionality approaching that of an
+integrated suite.
+This model is built on SAMP's combination of
+publish/subscribe messaging,
+vague message semantics,
+and ease of adoption leading to widespread uptake.
+
+SAMP's flexibility means that it is capable of supporting other
+communication models, some in more marginal use now
+and some which may be explored more in the future.
+Introducing new Profiles, different MType libraries or
+alternative hub provision arrangements could render the same
+infrastructure suitable for contexts with different
+requirements for reliability, security or efficiency.
+Another possible scenario is inter-host messaging to
+support collaborative work;
+this option has been under consideration throughout SAMP's history
+and is possible using existing profiles,
+though it is somewhat cumbersome to set up and has so far not
+received much user attention.
+Despite its development history, there is nothing in the protocol
+specific to either the Virtual Observatory or astronomy,
+so use in other problem domains is quite feasible,
+though no effort is currently being deployed in this direction.
+
+SAMP's design has been informed by the requirements and experimentation
+of the SAMP developer community, largely within the context of
+the Virtual Observatory,
+including positive and negative lessons learned from its predecessor PLASTIC.
+Some aspects of this design that have been particularly successful
+include
+the decoupling of architectural concerns into API, transport
+mechanism and semantics,
+the lightweight, bottom-up process for agreement of semantics,
+and the built-in extensibility provided by pervasive use of
+extensible vocabularies.
+
+Together, these fall under the heading of standardising
+only those things which need to be defined at a given stage,
+and leaving the option of filling in the details until a time
+and in a context when the requirements will be clearer.
+The need for the Web Profile was not forseen when the first version
+of the standard was published, but the transport/API decoupling
+meant it could be retrofitted with no disruption to existing client code.
+The fact that MType semantics are excluded from the standard
+itself means that these can be defined and iteratively adjusted with
+experience of a working transport infrastructure, rather than
+specifying them up front by committee decision as part of the
+protocol design, only to find them ill-adapted to tool
+deployment in practice.
+
+SAMP is not a magic bullet.
+In typical current use the level of integration it offers
+between independently developed tools falls short of what would be
+available from a monolithic application,
+its pragmatic approach to communications can lead to patchy reliability,
+and its security model would not be appropriate for use with
+commercially sensitive data.
+However its ease of use and widespread uptake have delivered in practice
+an improved environment for desktop data analysis,
+allowing working astronomers to get more done.
+
+
 
 \section*{References}
 
