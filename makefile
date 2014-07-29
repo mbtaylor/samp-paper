@@ -15,6 +15,7 @@ $(PAPER).pdf: $(PAPER).tex bibsamp.bib version.tex
 	$(PDFLATEX) $(PAPER) \
         && bibtex $(PAPER) \
         && $(PDFLATEX) $(PAPER) \
+        && $(PDFLATEX) $(PAPER) \
         && $(PDFLATEX) $(PAPER)
 
 version.tex: $(PAPER).tex bibsamp.bib makefile
