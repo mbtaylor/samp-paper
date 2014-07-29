@@ -22,7 +22,8 @@ version.tex: $(PAPER).tex bibsamp.bib makefile
 	echo Version: \
             `git show -s --format=%h` \
              \(`git show -s --format=%ci | sed 's/:[0-9]* .*//'`\) \
-             `git status -s | grep -q '^[MADRU ][MADRU ]' \
+             `git status -s | grep -v '^.. acsamp.pdf *$$' \
+                            | grep -q '^[MADRU ][MADRU ]' \
                   && echo - modified` \
              >$@
 
