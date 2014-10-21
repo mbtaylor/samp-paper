@@ -905,7 +905,87 @@ this functionality is used in practice.
 
 \subsection{Examples of Use} \label{sec:examples}
 
-{\todo one or two short examples? maybe with screenshots??}
+SAMP allows applications to extend their capabilities through
+cooperation with others.
+Figure \ref{fig:transmit} shows some examples of
+the basic case where one SAMP client transmits a data item
+(spectrum, table or image) to another.
+Figure \ref{fig:linked} illustrates a more sophisticated
+interaction in which two applications exchange data and control
+in both directions to provide linked views exploiting the
+capabilities of each.
+
+\begin{figure*}
+\begin{center}
+\begin{tabular}{lc}
+{\em (a)} & \\
+& \includegraphics[width=0.92\textwidth]{topcat-cassis.png} \\
+{\em (b)} & \\
+& \includegraphics[width=0.92\textwidth]{vizier-voplot.png} \\[2mm]
+{\em (c)} & \\
+&
+\begin{tabular}{ll}
+{\small\tt\color{olive}
+\raisebox{15mm}{
+\begin{minipage}[b]{0cm}
+\begin{tabbing}
+{\color{lightgray}>>>} {\color{violet}from} {\color{darkgray}astropy.vo.samp} {\color{violet}import} {\color{darkgray}SAMPIntegratedClient} \\
+{\color{lightgray}>>>} {\color{darkgray}client} = {\color{darkgray}SAMPIntegratedClient}() \\
+{\color{lightgray}>>>} {\color{darkgray}client}.{\color{darkgray}connect}() \\
+{\color{lightgray}>>>} {\color{darkgray}client}.{\color{darkgray}notify\_all}(\{ \\
+{\color{lightgray}...} \ \ \ {\color{blue}'samp.mtype'}:\ {\color{blue}'image.load.fits'}, \\
+{\color{lightgray}...} \ \ \ {\color{blue}'samp.params'}:\ \{ \\
+{\color{lightgray}...} \ \ \ \ \ \ {\color{blue}'url'}:\ {\color{blue}'file:///data/ngc5194/'} \\
+{\color{lightgray}...} \ \ \ \ \ \ \ \ \ \ \ \ \ {\color{blue}'frame-u-003699-6-0100.fits'}, \\
+{\color{lightgray}...} \ \ \ \ \ \ {\color{blue}'name'}:\ {\color{blue}'SDSS band u'} \\
+{\color{lightgray}...} \ \ \ \} \\
+{\color{lightgray}...} \})
+\end{tabbing}
+\end{minipage}}}
+\hspace*{2mm}
+&
+\includegraphics[width=0.38\textwidth]{ds9-ngc5194-d.png}
+\end{tabular}
+\end{tabular}
+\end{center}
+\caption{\label{fig:transmit}
+Transmission of data items from one SAMP client to another.
+(a) A table has been acquired using Simple Spectral Access Protocol
+by the TOPCAT table analysis tool, in which each row references
+an external spectrum by URL.  When the user selects a row of this
+table, the spectrum is sent to the CASSIS spectrum tool.
+(b) The source catalogue resulting from a VizieR query,
+displayed in a web page, is sent to the VOPlot application.
+(c) A local FITS image is loaded into the ds9 image viewer
+from the AstroPy command line.
+}
+\end{figure*}
+
+\begin{figure*}
+\begin{center}
+\includegraphics[width=0.9\textwidth]{SAMP-AC_aladin-topcat.png}
+\end{center}
+\caption{\label{fig:linked}
+Linked view of data in TOPCAT and Aladin showing
+red objects in the vicinity of V$^{\star}$~V410~Tau.
+A full list of sources in the region has been loaded
+into Aladin, then transferred to TOPCAT
+(using SAMP MType {\tt table.load.votable}).
+The user plots a colour-colour diagram in TOPCAT
+and selects the reddest objects graphically,
+causing them to be displayed as red circles,
+then passes the selection back to Aladin
+(MType {\tt table.select.rowList}) where
+they are shown as green squares.
+Clicking on one of the points in either application can
+highlight the corresponding point in the other
+(MType {\tt table.highlight.row}).
+The SAMP interaction is mediated by the client GUIs,
+so the user does not need to understand the details.
+This example illustrates how SAMP enables seamless exploration of both
+parameter space and physical space.
+}
+\end{figure*}
 
 
 \section{Conclusions} \label{sec:conclusion}
