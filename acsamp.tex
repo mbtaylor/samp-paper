@@ -244,6 +244,19 @@ and which has in fact been widely taken up.
 
 SAMP is based on a star topology, and its central component is a
 {\em Hub\/} through which all communications are passed.
+\begin{figure}
+\begin{center}
+\includegraphics[width=0.9\columnwidth]{topology-a.png}
+\end{center}
+\caption{\label{fig:topology}
+Schematic of SAMP {\em Hub\/} and {\em Clients\/} joined
+in a star topology (Figure \ref{fig:topology}).
+Black lines indicate hub {\em registration\/}.
+The half arrows indicate the progress of a message
+from a sending client (which may or may not be callable)
+to a callable client, passing through the Hub.
+}
+\end{figure}
 Clients first perform a resource discovery step to locate the Hub,
 and then {\em register\/} with it, establishing a private communication
 channel through which subsequent calls to the Hub's services can be made.
