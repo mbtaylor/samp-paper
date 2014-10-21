@@ -243,14 +243,14 @@ and which has in fact been widely taken up.
 \section{Protocol Description} \label{sec:protocol}
 
 SAMP is based on a star topology, and its central component is a
-{\em Hub\/} through which all communications are passed.
+{\em Hub\/} through which all communications are passed
+(Figure \ref{fig:topology}).
 \begin{figure}
 \begin{center}
 \includegraphics[width=0.9\columnwidth]{topology-a.png}
 \end{center}
 \caption{\label{fig:topology}
-Schematic of SAMP {\em Hub\/} and {\em Clients\/} joined
-in a star topology (Figure \ref{fig:topology}).
+Schematic of SAMP {\em Hub\/} and {\em Clients\/} joined in a star topology.
 Black lines indicate hub {\em registration\/}.
 The half arrows indicate the progress of a message
 from a sending client (which may or may not be callable)
@@ -936,10 +936,12 @@ capabilities of each.
 {\em (b)} & \\
 & \includegraphics[width=0.92\textwidth]{vizier-voplot.png} \\[2mm]
 {\em (c)} & \\
-&
-\begin{tabular}{ll}
+& \includegraphics[width=0.92\textwidth]{ds9-ngc5194-f.png} \\
+\begin{picture}(0,0)
+\put(0,0){
+\hspace*{5mm}
 {\small\tt\color{olive}
-\raisebox{15mm}{
+\raisebox{18mm}{
 \begin{minipage}[b]{0cm}
 \begin{tabbing}
 {\color{lightgray}>>>} {\color{violet}from} {\color{darkgray}astropy.vo.samp} {\color{violet}import} {\color{darkgray}SAMPIntegratedClient} \\
@@ -956,9 +958,8 @@ capabilities of each.
 \end{tabbing}
 \end{minipage}}}
 \hspace*{2mm}
-&
-\includegraphics[width=0.38\textwidth]{ds9-ngc5194-d.png}
-\end{tabular}
+}
+\end{picture}
 \end{tabular}
 \end{center}
 \caption{\label{fig:transmit}
