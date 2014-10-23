@@ -159,17 +159,92 @@ and possible future directions for SAMP.
 For the complete and definitive details of the protocol,
 the reader is referred to the standard document itself \citep{samp_std}.
 
-{\todo
 \section{History} \label{sec:history}
- 
-  \begin{itemize}
-  \item XPA ... other existing messaging systems ...
-  \item SC4DEVO ... VOTech ... VODesktop ... AstroGrid Runtime ...
-  \item PLASTIC\citep{plastic_note} ... pub/sub ... XML-RPC/Java/RMILite ...
-  \item Lessons learned from PLASTIC
-  \item Mention (lack of) focus on performance
-  \end{itemize}
-}
+
+% Compare with other messaging systems: XPA, DCOM, SBW, WAMP, CORBA, ...
+% Compare requirements: security, performance, semantics, easy startup, ...
+
+In the context of the emerging Virtual Observatory in the mid-2000s,
+the benefit of connecting client-side tools to improve productivity
+when working with multiple data types became apparent.
+In fact this problem was not specific to the VO, 
+but the ease with which multiple related data products of
+diverse types within multiple wavelength regimes could be
+acquired using VO technologies
+amplified the benefits that such tool integration could deliver.
+Additionally, the new shared funding and communications channels
+between institutionally and geographically separated software developers
+that arose from various VO initiatives
+proved important in practice
+as a platform for experimentation and agreement in this area.
+
+The external scripting capabilities of tools such as Aladin, SPLAT-VO
+and SAOImage ds9 already provided the option of tightly coupled master/slave
+control between pairs of applications, but did not lend themselves
+to the kind of cooperative interaction envisaged.
+The developers of Aladin experimented with Java interfaces designed
+for two-way communications; these delivered some limited integration,
+but were restricted to applications not only in java but residing
+in the same process.
+Meanwhile the Astro Runtime \citep{2007ASPC..376..571W} developed by
+AstroGrid was providing a service interface designed for desktop
+tools based on a choice of communication technologies
+(XML-RPC, REST, Java RMI and JVM call).
+% Did the AR actually pre-date or post-date plastic?
+
+From this background, in 2005 discussions between members of
+the AstroGrid, CDS and CINECA teams in the context of the Euro-VO
+framework and the SC4DEVO workshop series led to the development
+of a new communication protocol PLASTIC:
+the PLatform for AStronomical Tool InterConnection
+\citep{2007ASPC..376..511T,plastic_note}.
+PLASTIC prototyped many features that were inherited later by SAMP,
+including a central hub, publish-subscribe messaging, use of XML-RPC,
+loosely-defined message semantics, and a pragmatic approach
+to providing ``good-enough'' communications.
+PLASTIC proved popular with developers and users, % citation needed?
+and was incorporated into a dozen or so tools,
+which could be used together effectively
+in productive and sometimes novel ways.
+
+Interest in PLASTIC was however largely concentrated in Europe.
+Efforts to gain IVOA endorsement and extend the pool
+of applications that could communicate in this way
+led after some discussion to the drafting by European and US authors
+of a successor standard, the Simple Application Messaging Protocol,
+which was accepted as an IVOA Recommendation in 2008 (SAMP version 1.11).
+This standard was intentionally similar in many respects to PLASTIC,
+in order to avoid disrupting patterns of successful
+cooperation already in use,
+but the opportunity was taken to amend some decisions that experience had
+shown to be sub-optimal, and to expand its scope to accommodate
+other possible usage patterns.
+Changes made on the basis of lessons learned from PLASTIC included
+a simplification of the type system,
+complete language independence
+(though PLASTIC could be used from any language,
+certain parts of the protocol were defined with reference to Java),
+improved security arrangements
+(security is still rudimentary in SAMP, but opportunities for
+trivial client spoofing have been removed),
+modification of message names
+(now both human-readable and wildcard-able rather than opaque URIs),
+definition of all message parameters and return values as
+named values rather than ordered lists,
+pervasive use of asynchronous messaging for robustness
+(though a synchronous fa\c{c}ade is provided for convenience),
+improved error reporting,
+and better extensibility.
+
+Also new in SAMP was the notion of a Profile to provide formal separation
+between the abstract messaging model and the transport layer.
+One reason for its introduction was to enable the possible future
+use of the protocol for messaging in less ``PLASTIC-like'' contexts.
+At the time, requirements for improved performance or security were
+envisaged; to date extensions in those directions have not been
+explored, but the Profile mechanism has paid off by supporting
+the later introduction of the Web Profile to support browser-based
+clients alongside desktop ones.
 
 
 \section{Design for Interoperability} \label{sec:design}
