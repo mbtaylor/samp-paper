@@ -150,7 +150,7 @@ in sufficient detail to understand the design decisions taken
 and their consequences,
 particularly from the point of view of the usage scenario
 outlined above.
-Section \ref{sec:history} outlines the evolution of SAMP from
+Section \ref{sec:context} outlines the evolution of SAMP from
 its predecessor PLASTIC,
 section \ref{sec:design} outlines some high-level design principles,
 section \ref{sec:protocol} presents a description of the protocol itself
@@ -161,10 +161,9 @@ and possible future directions for SAMP.
 For the complete and definitive details of the protocol,
 the reader is referred to the standard document itself \citep{samp_std}.
 
-\section{History} \label{sec:history}
+\section{Context} \label{sec:context}
 
-% Compare with other messaging systems: XPA, DCOM, SBW, WAMP, CORBA, ...
-% Compare requirements: security, performance, semantics, easy startup, ...
+\subsection{History}
 
 In the context of the emerging Virtual Observatory in the mid-2000s,
 the benefit of connecting client-side tools to improve productivity
@@ -246,8 +245,52 @@ use of the protocol for messaging in less ``PLASTIC-like'' contexts.
 At the time, requirements for improved performance or security were
 envisaged; to date extensions in those directions have not been
 explored, but the Profile mechanism has paid off by supporting
-the later introduction of the Web Profile to support browser-based
+the later development of the Web Profile to support browser-based
 clients alongside desktop ones.
+The introduction of the Web Profile in SAMP version 1.3 (2012)
+has been the main change so far since the initial version.
+
+\subsection{Other Messaging Systems}
+
+Many other messaging infrastructures exist and it may be
+instructive to provide a short comparison between SAMP
+and some of the alternatives.
+
+Several generic messaging frameworks share features with SAMP, 
+for example AMQP, ZeroMQ, XPA, and D-Bus.
+To our knowledge, none
+satisfy SAMP's key requirements of an easily implementable
+platform-neutral standard supporting straightforward messaging
+between a shared community of clients in quite the way required,
+though some of these systems could be used as transport layers on
+which future SAMP profiles could be built, in the same way
+that XML-RPC has been used in the existing profiles.
+Although SAMP's design is not specific to astronomy,
+unlike many generic messaging libraries
+it deliberately presents a relatively inflexible interface,
+since restricting the decisions that need to be made to use it
+reduces the burden on client developers.
+
+A couple of messaging systems however merit further mention:
+WAMP, the Web Application Messaging Protocol\footnote{\url{http://wamp.ws}}, 
+bears some striking architectural similarities to SAMP including 
+a combination of RPC and publish-subscribe messaging mediated by 
+a central component known in WAMP terminology as the Router.
+However, it does not address the issue of router discovery,
+so there is no prescribed way to join the default community of clients;
+also, its development post-dated the publication of SAMP.
+An example of a domain-specific messaging framework is
+the Systems Biology Workbench \citep{sbw},
+which is close in spirit to SAMP, enabling platform-independent 
+remote method invocation between components (known as ``modules'') 
+in the field of systems biology, based around the SBML data format.
+One point of difference is that
+the SBW infrastructure itself orchestrates the loading of
+modules to provide the required functionality;
+in SAMP this choice of components is left to the user,
+though components like AppLauncher
+\citep{2012ASPC..461..379L} are available to
+layer this on top of the basic protocol where desired.
 
 
 \section{Design for Interoperability} \label{sec:design}
@@ -363,7 +406,17 @@ will fail if the target client has not appropriately subscribed.
 If a client has no further use for SAMP communications
 (for instance on application exit), it can and should {\em unregister\/}.
 
-The details of this pattern are codified in a three-layer architecture:
+This framework combines the notions of publish-subscribe
+(pub/sub) and Remote Procedure Call (RPC) messaging.
+Like publish-subscribe, messages are only delivered to
+appropriately subscribed recipients,
+but like RPC the sender may optionally
+target messages to a selected recipient,
+and may optionally receeve responses from the recipient(s).
+The targetting mode, response requirement, and message content
+are all decoupled from each other.
+
+The details of this system are codified in a three-layer architecture:
 \begin{description}
 \item[Abstract API:] defines the services provided by the Hub and clients
 \item[Profile:] maps the Abstract API to specific communication operations,
