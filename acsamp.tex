@@ -139,7 +139,7 @@ Although communication between interactive desktop tools was the
 original stimulus for what is now SAMP, the framework is flexible
 enough to support other usage patterns as well.
 
-Two previous papers on SAMP have been presented at the ADASS conference
+Two previous papers on SAMP have been presented in the ADASS conference
 series:
 \citet{adassxxi_paper} briefly outlines the architecture and explains
 the Web Profile, and \citet{adassxxii_bof} lists some existing
@@ -147,7 +147,9 @@ client libraries.
 The current paper discusses the protocol,
 its communication model, and its current usage
 in sufficient detail to understand the design decisions taken
-and their consequences.
+and their consequences,
+particularly from the point of view of the usage scenario
+outlined above.
 Section \ref{sec:history} outlines the evolution of SAMP from
 its predecessor PLASTIC,
 section \ref{sec:design} outlines some high-level design principles,
@@ -322,11 +324,12 @@ SAMP is based on a star topology, and its central component is a
 \includegraphics[width=0.9\columnwidth]{topology-a.png}
 \end{center}
 \caption{\label{fig:topology}
-Schematic of SAMP {\em Hub\/} and {\em Clients\/} joined in a star topology.
-Black lines indicate hub {\em registration\/}.
-The half arrows indicate the progress of a message
-from a sending client (which may or may not be callable)
-to a callable client, passing through the Hub.
+Schematic of SAMP {\em Hub\/} and {\em clients\/} joined in a star topology.
+Black lines indicate clients {\em registered\/} with the hub.
+The red half-arrows indicate the progress of a message
+from a sending client (which may or may not be {\em callable\/})
+to a receiving client (which must be Callable),
+passing through the Hub.
 }
 \end{figure}
 Clients first perform a resource discovery step to locate the Hub,
@@ -763,7 +766,7 @@ can be arranged,
 for example as part of a managed user environment,
 more robust connectivity will result;
 an example is the Herschel Interactive Processing Environment
-\citep{2010ASPC..434..139O}.
+\citep{2012ASPC..461..733B}.
 
 \subsection{MType Semantics} \label{sec:messageSemantics}
 
@@ -987,23 +990,19 @@ web archives either exposing simple results pages
 or offering sophisticated browser functionality,
 throwaway user scripts,
 and more.
+While initially developed and used mostly
+within stellar and galactic astronomy,
+use is now becoming common in related fields such as
+planetary science \citep{ACVOplanetary}
+and space physics \citep{ACVOspacephys}.
 It is probably now the case that most astronomical applications
 that can benefit from interaction with other such tools
-include at least a basic SAMP capability,
-though it's harder to ascertain to what extent
-this functionality is used in practice.
+include at least a basic SAMP capability.
+It is harder to ascertain to what extent this functionality is used
+in practice, but the enthusiasm of application developers to
+incorporate SAMP is presumably indicative of its utility.
 
 \subsection{Examples of Use} \label{sec:examples}
-
-SAMP allows applications to extend their capabilities through
-cooperation with others.
-Figure \ref{fig:transmit} shows some examples of
-the basic case where one SAMP client transmits a data item
-(spectrum, table or image) to another.
-Figure \ref{fig:linked} illustrates a more sophisticated
-interaction in which two applications exchange data and control
-in both directions to provide linked views exploiting the
-capabilities of each.
 
 \begin{figure*}
 \begin{center}
@@ -1079,6 +1078,24 @@ This example illustrates how SAMP enables seamless exploration of both
 parameter space and physical space.
 }
 \end{figure*}
+
+Current SAMP usage is most prevalent along the lines of the scenario
+outlined in the Introduction, allowing desktop and web-based clients to
+cooperate as a loosely integrated suite
+by employing the data-exchange MTypes in common use.
+Figure \ref{fig:transmit} shows some examples of
+the basic case where one client transmits a data item
+(spectrum, table or image) to another.
+Figure \ref{fig:linked} illustrates a more sophisticated
+interaction in which two applications exchange data and control
+in both directions to provide linked views exploiting the
+capabilities of each.
+
+SAMP has also been employed in other ways however,
+for instance to provide a private layer for RPC functionality
+required internally by Iris \citep{ACVOiris}
+and to experiment with visualisation using on-demand
+data generation in Astro-WISE \citep{2013ExA....35..283B}.
 
 
 \section{Conclusions} \label{sec:conclusion}
