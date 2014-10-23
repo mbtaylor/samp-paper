@@ -167,6 +167,7 @@ the reader is referred to the standard document itself \citep{samp_std}.
   \item SC4DEVO ... VOTech ... VODesktop ... AstroGrid Runtime ...
   \item PLASTIC\citep{plastic_note} ... pub/sub ... XML-RPC/Java/RMILite ...
   \item Lessons learned from PLASTIC
+  \item Mention (lack of) focus on performance
   \end{itemize}
 }
 
@@ -215,11 +216,18 @@ just those forseen by the standard authors increases its likely usefulness.
 Finally, the approach has been above all pragmatic, favouring
 the straightforward over the rigorous in cases of conflict.
 For instance message delivery is not guaranteed, but can be 
-expected to work most of the time.  The Standard Profile offers
-a security model which will prevent casual interference
-but may be vulnerable to determined attack.  Semantics are tagged
-using short readable strings on the assumption of sensible choices
+expected to work most of the time.
+The security model will prevent casual interference,
+but may be vulnerable to determined attack.
+Semantics are tagged
+using short readable strings on the assumption of sensible choices,
 rather than URIs with guaranteed private namespaces.
+Performance is easily good enough to handle exchange of short control
+messages on a timescale commensurate with user actions,
+but not for sustained throughput of high data volumes.
+(It may be noted that some, but not all,
+of these items could if required be ameliorated by future
+introduction of a new Profile with different transport characteristics).
 
 These principles and their application, in some cases informed
 by positive and negative lessons from the experience of PLASTIC,
@@ -322,9 +330,9 @@ Most of these functions represent services provided by the Hub,
 for instance
 {\tt register} (which returns information required by the
 client for future communications, typically an identification token)
-or {\tt notifyAll} (which requests forwarding a given message to
+and {\tt notifyAll} (which requests forwarding a given message to
 all appropriately subscribed clients).
-The rest represent services required from callable clients, such as
+The remainder represent services required from callable clients, such as
 {\tt receiveNotification} (which consumes a given message originating
 from another client).
 
@@ -534,7 +542,8 @@ from non-Unicode-capable environments such as Fortran, IDL and
 and some shell scripts.
 This has not caused known problems to date, but inability to handle
 Unicode text without additional encoding could prove awkward in
-some cases.
+some cases, and it may be necessary to revisit this in a future
+revision of the standard.
 
 \subsection{Extensible Vocabularies} \label{sec:extVocabs}
 
@@ -674,7 +683,11 @@ but, in accordance with SAMP's pragmatic approach,
 operates well enough most of the time, with a minimum of user effort;
 usually, it ``just works''.
 Note that where explicit control of an independent hub process
-can be arranged, more robust connectivity will result.
+can be arranged,
+for example as part of a managed user environment,
+more robust connectivity will result;
+an example is the Herschel Interactive Processing Environment
+\citep{2010ASPC..434..139O}.
 
 \subsection{MType Semantics} \label{sec:messageSemantics}
 
@@ -846,8 +859,8 @@ However, for astronomy-specific MTypes this option was rejected,
 partly in order to avoid the introduction of astronomy-specific details
 into a standard which is otherwise quite suitable for use in other domains,
 and partly because the rather heavyweight IVOA process for
-standard review \citep{ivoadoc}
-(draft to acceptance rarely taking less than 12 months)
+standard review \citep{ivoadoc},
+in which draft to acceptance rarely takes less than 12 months,
 would impede introduction and updating of MTypes as required
 by implementation experience and new application demands.
 Another option is periodic publication of MType definitions
@@ -1006,7 +1019,8 @@ integrated suite.
 This model is built on SAMP's combination of
 publish/subscribe messaging,
 vague message semantics,
-and ease of adoption leading to widespread uptake.
+and ease of adoption by both developers and users
+leading to widespread uptake.
 
 SAMP's flexibility means that it is capable of supporting other
 communication models, some in more marginal use now
