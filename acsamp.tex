@@ -6,7 +6,6 @@
 \usepackage{graphicx}
 
 \usepackage{xcolor}  % for draft highlighting
-\newcommand{\todo}{\color{gray}}
 
 \journal{Astronomy \& Computing}
 
@@ -19,7 +18,8 @@
 
 \begin{frontmatter}
 
-\title{SAMP, the Simple Applications Messaging Protocol}
+\title{SAMP, the Simple Application Messaging Protocol:
+       Letting applications talk to each other}
 
 %% Group authors per affiliation:
 \author[bristol]{M.~B.~Taylor}
@@ -82,15 +82,11 @@ to exploit these linkages between data items as well as the
 internal structure of each.
 
 The working astronomer therefore uses a selection
-of different software items,
+of different software components,
 each specialising in a particular type of data or manipulation,
 for different data sets and different tasks,
 and has to integrate these together in a way that takes account of
 the relationships of the data items under consideration.
-This situation is not specific to the Virtual Observatory,
-but the wealth of heterogeneous data available from the VO,
-sometimes requiring the use of additional tools for data discovery
-and acquisition, accentuates these issues.
 
 For batch or pipeline-type processing the required tool integration
 is usually, in terms of data flow, fairly straightforward:
@@ -169,9 +165,10 @@ In the context of the emerging Virtual Observatory in the mid-2000s,
 the benefit of connecting client-side tools to improve productivity
 when working with multiple data types became apparent.
 In fact this problem was not specific to the VO, 
-but the ease with which multiple related data products of
-diverse types within multiple wavelength regimes could be
-acquired using VO technologies
+but the ease with which multiple related data products
+could be acquired using VO technologies,
+themselves sometimes requiring the use of separate tools for
+data discovery and acquisition,
 amplified the benefits that such tool integration could deliver.
 Additionally, the new shared funding and communications channels
 between institutionally and geographically separated software developers
@@ -185,35 +182,36 @@ control between pairs of applications, but did not lend themselves
 to the kind of cooperative interaction envisaged.
 The developers of Aladin experimented with Java interfaces designed
 for two-way communications; these delivered some limited integration,
-but were restricted to applications not only in java but residing
-in the same process.
+but were restricted to applications operating within the same Java
+virtual machine.
 Meanwhile the Astro Runtime \citep{2007ASPC..376..571W} developed by
 AstroGrid was providing a service interface designed for desktop
 tools based on a choice of communication technologies
 (XML-RPC, REST, Java RMI and JVM call).
 % Did the AR actually pre-date or post-date plastic?
 
-From this background, in 2005 discussions between members of
-the AstroGrid, CDS and CINECA teams in the context of the Euro-VO
+From this background, in 2005 discussions between developers of
+the AstroGrid, Aladin, VisIVO and TOPCAT software
+in the context of the Euro-VO
 framework and the SC4DEVO workshop series led to the development
 of a new communication protocol PLASTIC:
 the PLatform for AStronomical Tool InterConnection
 \citep{2007ASPC..376..511T,plastic_note}.
-PLASTIC prototyped many features that were inherited later by SAMP,
+PLASTIC prototyped many features that were later inherited by SAMP,
 including a central hub, publish-subscribe messaging, use of XML-RPC,
 loosely-defined message semantics, and a pragmatic approach
 to providing ``good-enough'' communications.
 PLASTIC proved popular with developers and users, % citation needed?
-and was incorporated into a dozen or so tools,
+and was incorporated into a dozen or so desktop applications,
 which could be used together effectively
 in productive and sometimes novel ways.
 
-Interest in PLASTIC was however largely concentrated in Europe.
-Efforts to gain IVOA endorsement and extend the pool
+Interest in PLASTIC was however largely confined to Europe.
+Efforts to gain IVOA endorsement and expand the pool
 of applications that could communicate in this way
 led after some discussion to the drafting by European and US authors
 of a successor standard, the Simple Application Messaging Protocol,
-which was accepted as an IVOA Recommendation in 2008 (SAMP version 1.11).
+which was accepted as an IVOA Recommendation in 2009 (SAMP version 1.11).
 This standard was intentionally similar in many respects to PLASTIC,
 in order to avoid disrupting patterns of successful
 cooperation already in use,
@@ -232,9 +230,8 @@ trivial client spoofing have been removed),
 modification of message names
 (now both human-readable and wildcard-able rather than opaque URIs),
 definition of all message parameters and return values as
-named values rather than ordered lists,
-pervasive use of asynchronous messaging for robustness
-(though a synchronous fa\c{c}ade is provided for convenience),
+key-value pairs rather than ordered lists,
+use of fundamentally asynchronous messaging for robustness,
 improved error reporting,
 and better extensibility.
 
@@ -248,13 +245,14 @@ explored, but the Profile mechanism has paid off by supporting
 the later development of the Web Profile to support browser-based
 clients alongside desktop ones.
 The introduction of the Web Profile in SAMP version 1.3 (2012)
-has been the main change so far since the initial version.
+has been the main change to date since the initial version.
 
 \subsection{Other Messaging Systems}
 
-Many other messaging infrastructures exist and it may be
-instructive to provide a short comparison between SAMP
-and some of the alternatives.
+Many general- and special-purpose messaging frameworks exist.
+It is beyond the scope of this paper to provide a comprehensive
+review, but we provide here a brief comparison between SAMP and
+some of the alternatives.
 
 Several generic messaging frameworks share features with SAMP, 
 for example AMQP, ZeroMQ, XPA, and D-Bus.
@@ -266,10 +264,10 @@ though some of these systems could be used as transport layers on
 which future SAMP profiles could be built, in the same way
 that XML-RPC has been used in the existing profiles.
 Although SAMP's design is not specific to astronomy,
-unlike many generic messaging libraries
-it deliberately presents a relatively inflexible interface,
-since restricting the decisions that need to be made to use it
-reduces the burden on client developers.
+it deliberately restricts some choices related to implementation
+and usage in a way that would not be
+appropriate for a generic messaging framework,
+to reduce the burden on client developers.
 
 A couple of messaging systems however merit further mention:
 WAMP, the Web Application Messaging Protocol\footnote{\url{http://wamp.ws}}, 
@@ -277,7 +275,7 @@ bears some striking architectural similarities to SAMP including
 a combination of RPC and publish-subscribe messaging mediated by 
 a central component known in WAMP terminology as the Router.
 However, it does not address the issue of router discovery,
-so there is no prescribed way to join the default community of clients;
+so there is no prescribed way for clients to initiate communication;
 also, its development post-dated the publication of SAMP.
 An example of a domain-specific messaging framework is
 the Systems Biology Workbench \citep{sbw},
@@ -307,10 +305,6 @@ have been followed.
 In the first place, it is as far as possible platform independent.
 The definition of the protocol is not dependent on or biassed
 towards use of particular implementation languages or operating systems.
-It differs in this respect from the earlier PLASTIC protocol,
-which while accessible from any language was in parts defined with
-reference to the Java platform, creating a perception which may
-have discouraged uptake by non-Java developers.
 
 Second, ease of adoption.
 Application authors have in practice found basic use of 
@@ -329,7 +323,7 @@ without needing to perform expert configuration
 (ideally, any explicit setup at all) or to understand the details
 of the messaging system.
 
-Third, flexibility and extensibility.
+Third, extensibility.
 Building into the system the capability to use it in ways
 driven by the requirements of the client tools rather than
 just those forseen by the standard authors increases its likely usefulness.
@@ -383,7 +377,7 @@ providing information about other registered clients,
 and forwarding {\em messages\/} to those clients.
 These messages may elicit responses, which may optionally be passed
 back to the message sender, again via the Hub.
-All clients are able to send messages in this way.
+All registered clients are able to send messages in this way.
 Any client may optionally declare itself {\em callable\/},
 in which case it is also able to receive messages sent by others.
 Callability is optional since it is more difficult to
@@ -412,7 +406,7 @@ Like publish-subscribe, messages are only delivered to
 appropriately subscribed recipients,
 but like RPC the sender may optionally
 target messages to a selected recipient,
-and may optionally receeve responses from the recipient(s).
+and may optionally receive responses from the recipient(s).
 The targetting mode, response requirement, and message content
 are all decoupled from each other.
 
@@ -440,7 +434,7 @@ agreed outside of SAMP itself by cooperating client developers.
 % treat all messages without regard to their semantic content.
 
 Because of the central r\^{o}le of the Hub in this pattern,
-it presents a single point of failure and potential bottle-neck.
+it presents a single point of failure and potential bottleneck.
 However, SAMP messages are usually short,
 and in practice performance issues have not generally been apparent.
 
@@ -472,13 +466,19 @@ The messaging model in principle associates
 a response with every message, containing at least a completion
 status flag along with zero or more MType-defined return values.
 However it is up to the sending client whether a response is
-required from any given message, and if not the ``send-and-forget''
-({\em notification\/}) pattern may be used,
+required from any given message; in many cases the status flag
+is the only return value, and in this case a sending application
+may or may not wish to make the effort to pass this on to its user
+(``the table you sent was/was not successfully received'').
+If the sender has no interest in the return value, it can use
+the ``send-and-forget'' ({\em notification\/}) pattern,
 with lower cost for sender, recipient and hub.
+
 Message processing is fundamentally asynchronous from the
 receiver's point of view, so that message/response times are
 not limited to the lifetime of an RPC call in the underlying
-transport mechanism, but the Hub provides an optional synchronous
+transport mechanism.
+However, the Hub provides an optional synchronous
 fa\c{c}ade for sending messages when clients expect fast turnaround
 and wish to avoid the additional complication of asynchronous processing.
 
@@ -561,14 +561,15 @@ of profiles is discouraged.
 An MType (message type) is the description for a message with particular
 syntax and semantics.
 It is analogous to a function definition in an API,
-and consists of a labelling string (sometimes also known as the MType)
+and consists of a labelling string (sometimes itself also known as the MType)
 along with
 a set of zero or more typed and named arguments,
 a set of zero or more typed and named return values,
 and some associated semantics indicating what the sender of such a
 message is trying to convey.
 
-A commonly used MType is {\tt image{\kdot}load{\kdot}fits},
+By way of example,
+a commonly used MType is {\tt image{\kdot}load{\kdot}fits},
 defined like this:
 \begin{quote}
   {\em Name:\/} \\
@@ -595,7 +596,7 @@ For the purpose of subscription a limited wildcarding syntax is available,
 so by using the MType patterns
 {\tt image{\kdot}load{\kdot}fits}, {\tt image.*} or {\tt *}
 a client may declare interest in only the above message,
-or all image-related messages, or all messages respectively.
+or all image-related messages, or all messages, respectively.
 % The intention is that the naming scheme should follow a hierarchical
 % scheme organising MTypes by function; in fact MType labels have
 % been assigned somewhat haphazardly.
@@ -620,7 +621,7 @@ using these types: message objects themselves, success and failure
 message responses, application metadata, and MType subscription lists.
 
 This system contains only three types:
-string, list and map.
+{\em string}, {\em list\/} and {\em map}.
 A string is a sequence of 7-bit ASCII printable characters,
 a list is an ordered sequence of strings, lists or maps, and
 a map is an unordered set of associations of string keys with values
@@ -665,7 +666,9 @@ bytes to a temporary file or serving them from an embedded HTTP server.
 It can also present complications if the sending and receiving client
 are not able to see the same URLs, for instance due to different security
 contexts; in this case, additional Hub services may be required to
-assist with data transfer between domains.
+assist with data transfer between domains
+(accordingly, the Web Profile provides services to assist with
+cross-domain data exchange).
 
 Note also that the string type does not natively accommodate Unicode text,
 including XML.
@@ -674,7 +677,7 @@ from non-Unicode-capable environments such as Fortran, IDL and
 and some shell scripts.
 This has not caused known problems to date, but inability to handle
 Unicode text without additional encoding could prove awkward in
-some cases, and it may be necessary to revisit this in a future
+some cases, and it may be necessary to revisit this restriction in a future
 revision of the standard.
 
 \subsection{Extensible Vocabularies} \label{sec:extVocabs}
@@ -689,7 +692,7 @@ propagating them to downstream consumers where applicable
 (compare the NDF extension architecture described in \citet{sgp38}).
 A corollary is that such non-well-known keys must be defined in such
 a way that ignoring them will result in reasonable behaviour.
-The Abstract API tends to prefer maps (unordered name/value pairs)
+The Abstract API tends to prefer {\em maps\/} (unordered name/value pairs)
 over ordered parameter value lists, which makes this extensibility
 pervasive throughout the messaging system,
 applying for instance to
@@ -868,7 +871,7 @@ messaging APIs offered by existing available tools and implement logic
 managing message dispatch for each case,
 the resulting code will not cope with applications
 unknown to the developer,
-for instance ones which have not yet been written.
+for instance ones yet to be written.
 
 For uncontrolled environments in which the user selects
 the range of cooperating tools at runtime therefore,
@@ -896,7 +899,8 @@ This framework typically manifests itself in a client user interface
 as an option, for an $X$ currently known by that client,
 either to {\em broadcast\/} it to all $X$-capable clients,
 or to target it to an entry selected by the user
-from a dynamically-discovered list of $X$-capable clients.
+from a dynamically-discovered list of $X$-capable clients
+(see Figure \ref{fig:linked} for an example).
 
 For clients to interoperate as reliably as possible in this scenario,
 it is not sufficient just to agree on the notion of a table or an image
@@ -989,7 +993,7 @@ have been written in to the standard in this way.
 All of these are in the reserved {\tt samp.} namespace.
 However, for astronomy-specific MTypes this option was rejected,
 partly in order to avoid the introduction of astronomy-specific details
-into a standard which is otherwise quite suitable for use in other domains,
+into a standard which is otherwise not tied to a particular domain,
 and partly because the rather heavyweight IVOA process for
 standard review \citep{ivoadoc},
 in which draft to acceptance rarely takes less than 12 months,
@@ -1002,7 +1006,7 @@ and this option was still felt to be undesirably cumbersome.
 
 Instead, a wiki page\footnote{
   At time of writing, this wiki page can be found near
-  \url{http://www.ivoa.net/samp/}.
+  \mbox{\url{http://www.ivoa.net/samp/}}.
   If the process for MType publication changes in the future,
   that URL should still indicate where to look for a list.}
 was set up on the IVOA web site listing currently agreed MTypes.
@@ -1021,13 +1025,9 @@ plans to modify this arrangement.
 Since its first version in 2008, a wide range of SAMP-enabled
 infrastructure and application software has become available.
 
-{\todo I don't think we want to list SAMP software by name do we?}
-
 Of infrastructure sofware that is actively maintained at the time of writing,
 interchangeable Hub implementations exist in Java and Python,
 and client toolkits in Java, Python, C and Javascript.
-% (since Version 0.4 the Python implementation has formed part of
-% the Astropy package, \citet{2013A&A...558A..33A}).
 Validation, debugging and development support tools are also available.
 Historical, partial or experimental SAMP functionality has
 also appeared in other languages including Perl, C Sharp and IDL.
@@ -1043,6 +1043,14 @@ web archives either exposing simple results pages
 or offering sophisticated browser functionality,
 throwaway user scripts,
 and more.
+
+SAMP infrastructure libraries are surveyed in \citet{adassxxii_bof},
+though a notable more recent development is the inclusion of the Python
+hub and client implementation in the Astropy package
+\citep{2013A&A...558A..33A} since its version 0.4.
+A partial list of some other tools with SAMP functionality
+may also be found near \url{http://www.ivoa.net/samp}.
+
 While initially developed and used mostly
 within stellar and galactic astronomy,
 use is now becoming common in related fields such as
@@ -1106,9 +1114,7 @@ from the AstroPy command line.
 
 \begin{figure*}
 \begin{center}
-\includegraphics[height=6cm]{topcat-ir-b.png}
-\hspace{1cm}
-\includegraphics[height=6cm]{aladin-ir-b.png}
+\includegraphics[height=6cm]{linked-ir.png}
 \end{center}
 \caption{\label{fig:linked}
 Linked view of data in TOPCAT and Aladin showing
@@ -1121,21 +1127,20 @@ and selects the reddest objects graphically,
 causing them to be displayed as red circles,
 then passes the selection back to Aladin
 (MType {\tt table.select.rowList}) where
-they are shown as green squares.
+they are shown as green squares;
+the inset menu shows the user interface for this step.
 Clicking on one of the points in either application can
-highlight the corresponding point in the other
+then highlight the corresponding point in the other
 (MType {\tt table.highlight.row}).
-The SAMP interaction is mediated by the client GUIs,
-so the user does not need to understand the details.
-This example illustrates how SAMP enables seamless exploration of both
-parameter space and physical space.
+This example illustrates how SAMP enables seamless exploration of
+data using both parameter space and physical space.
 }
 \end{figure*}
 
 Current SAMP usage is most prevalent along the lines of the scenario
 outlined in the Introduction, allowing desktop and web-based clients to
 cooperate as a loosely integrated suite
-by employing the data-exchange MTypes in common use.
+by employing the small number of data-exchange MTypes in common use.
 Figure \ref{fig:transmit} shows some examples of
 the basic case where one client transmits a data item
 (spectrum, table or image) to another.
