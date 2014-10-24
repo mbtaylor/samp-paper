@@ -886,7 +886,7 @@ sky position, coverage region, bibcode etc,
 or sometimes a reference to an $X$ from a previous message,
 for instance a row selection relating to an earlier-sent table.
 The implication of such an MType is that the receiver should do
-something with the $X$ in question: load, display, highlight,
+something appropriate with the $X$ in question: load, display, highlight,
 or otherwise perform some action which makes sense given the
 receiving application's capabilities.
 Callable SAMP clients should therefore advertise themselves
@@ -901,6 +901,11 @@ either to {\em broadcast\/} it to all $X$-capable clients,
 or to target it to an entry selected by the user
 from a dynamically-discovered list of $X$-capable clients
 (see Figure \ref{fig:linked} for an example).
+For this kind of usage, the presence of a human in the loop
+to direct messages between clients as required by a particular workflow
+is an important part of the system,
+but the decisions required from the user are generally simple ones,
+i.e.\ which of a small list of clients to contact.
 
 For clients to interoperate as reliably as possible in this scenario,
 it is not sufficient just to agree on the notion of a table or an image
@@ -1217,6 +1222,14 @@ experience of a working transport infrastructure, rather than
 specifying them up front by committee decision as part of the
 protocol design, only to find them ill-adapted to tool
 deployment in practice.
+
+Other factors important to its success have been
+the small number of MTypes actually in common use,
+enabled by the convention of vague message semantics
+and standardisation on data formats,
+and the unobtrusive embedding of SAMP into existing applications
+meaning that the functionality is available without
+requiring any special setup or understanding from the user.
 
 SAMP is not a magic bullet.
 In typical current use the level of integration it offers
