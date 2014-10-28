@@ -1111,17 +1111,17 @@ incorporate SAMP is presumably indicative of its utility.
 \raisebox{18mm}{
 \begin{minipage}[b]{0cm}
 \begin{tabbing}
-{\color{lightgray}>>>} {\color{violet}from} {\color{darkgray}astropy.vo.samp} {\color{violet}import} {\color{darkgray}SAMPIntegratedClient} \\
-{\color{lightgray}>>>} {\color{darkgray}client} = {\color{darkgray}SAMPIntegratedClient}() \\
-{\color{lightgray}>>>} {\color{darkgray}client}.{\color{darkgray}connect}() \\
-{\color{lightgray}>>>} {\color{darkgray}client}.{\color{darkgray}notify\_all}(\{ \\
-{\color{lightgray}...} \ \ \ {\color{blue}'samp.mtype'}:\ {\color{blue}'image.load.fits'}, \\
-{\color{lightgray}...} \ \ \ {\color{blue}'samp.params'}:\ \{ \\
-{\color{lightgray}...} \ \ \ \ \ \ {\color{blue}'url'}:\ {\color{blue}'file:///data/ngc5194/'} \\
-{\color{lightgray}...} \ \ \ \ \ \ \ \ \ \ \ \ \ {\color{blue}'frame-u-003699-6-0100.fits'}, \\
-{\color{lightgray}...} \ \ \ \ \ \ {\color{blue}'name'}:\ {\color{blue}'SDSS band u'} \\
-{\color{lightgray}...} \ \ \ \} \\
-{\color{lightgray}...} \})
+{\color{gray}>>>} {\color{violet}from} {\color{darkgray}astropy.vo.samp} {\color{violet}import} {\color{darkgray}SAMPIntegratedClient} \\
+{\color{gray}>>>} {\color{darkgray}client} = {\color{darkgray}SAMPIntegratedClient}() \\
+{\color{gray}>>>} {\color{darkgray}client}.{\color{darkgray}connect}() \\
+{\color{gray}>>>} {\color{darkgray}client}.{\color{darkgray}notify\_all}(\{ \\
+{\color{gray}...} \ \ \ {\color{blue}'samp.mtype'}:\ {\color{blue}'image.load.fits'}, \\
+{\color{gray}...} \ \ \ {\color{blue}'samp.params'}:\ \{ \\
+{\color{gray}...} \ \ \ \ \ \ {\color{blue}'url'}:\ {\color{blue}'file:///data/ngc5194/'} \\
+{\color{gray}...} \ \ \ \ \ \ \ \ \ \ \ \ \ {\color{blue}'frame-u-003699-6-0100.fits'}, \\
+{\color{gray}...} \ \ \ \ \ \ {\color{blue}'name'}:\ {\color{blue}'SDSS band u'} \\
+{\color{gray}...} \ \ \ \} \\
+{\color{gray}...} \})
 \end{tabbing}
 \end{minipage}}}
 \hspace*{2mm}
@@ -1150,20 +1150,20 @@ from the AstroPy command line.
 Linked view of data in TOPCAT and Aladin showing
 red objects in the vicinity of V$^{\star}$~V410~Tau.
 A full list of sources in the region has been loaded
-into Aladin, then transferred to TOPCAT
-(using SAMP MType {\tt table.load.votable}).
+into Aladin (right), then transferred to TOPCAT (left),
+using SAMP MType {\tt table.load.votable}.
 The user plots a colour-colour diagram in TOPCAT
 and selects the reddest objects graphically,
 causing them to be displayed as red circles,
 then passes the selection back to Aladin
 (MType {\tt table.select.rowList}) where
 they are shown as green squares;
-the inset menu shows the user interface for this step.
+the inset menu shows TOPCAT's user interface for this step.
 Clicking on one of the points in either application can
 then highlight the corresponding point in the other
 (MType {\tt table.highlight.row}).
 This example illustrates how SAMP enables seamless exploration of
-data using both parameter space and physical space.
+data using a combination of parameter space and physical space.
 }
 \end{figure*}
 
@@ -1255,6 +1255,11 @@ and standardisation on data formats,
 and the unobtrusive embedding of SAMP into existing applications
 meaning that the functionality is available without
 requiring any special setup or understanding from the user.
+The IVOA and other cross-institutional forums associated with
+the Virtual Observatory movement have also been of considerable
+importance in enabling and encouraging the necessary communication
+between application developers, though much software from outside
+the VO community is now also involved.
 
 SAMP is not a magic bullet.
 In typical current use the level of integration it offers
