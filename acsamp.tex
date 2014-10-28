@@ -185,10 +185,9 @@ for two-way communications; these delivered some limited integration,
 but were restricted to applications operating within the same Java
 virtual machine.
 Meanwhile the Astro Runtime \citep{2007ASPC..376..571W} developed by
-AstroGrid was providing a service interface designed for desktop
-tools based on a choice of communication technologies
-(XML-RPC, REST, Java RMI and JVM call).
-% Did the AR actually pre-date or post-date plastic?
+AstroGrid was providing desktop tools with a simplified fa\c{c}ade
+to a range of VO services using their choice of communication
+technology (XML-RPC, REST, Java RMI or JVM call).
 
 From this background, in 2005 discussions between developers of
 the AstroGrid, Aladin, VisIVO and TOPCAT software
@@ -197,11 +196,15 @@ framework and the SC4DEVO workshop series led to the development
 of a new communication protocol PLASTIC:
 the PLatform for AStronomical Tool InterConnection
 \citep{2007ASPC..376..511T,plastic_note}.
-PLASTIC prototyped many features that were later inherited by SAMP,
+
+PLASTIC built on the implementation and technology choices
+present in the Astro Runtime to provide the interaction
+capabilities required by the participating teams,
+and prototyped many features that were later inherited by SAMP,
 including a central hub, publish-subscribe messaging, use of XML-RPC,
 loosely-defined message semantics, and a pragmatic approach
 to providing ``good-enough'' communications.
-PLASTIC proved popular with developers and users, % citation needed?
+It proved popular with developers and users, % citation needed?
 and was incorporated into a dozen or so desktop applications,
 which could be used together effectively
 in productive and sometimes novel ways.
@@ -252,9 +255,9 @@ has been the main change to date since the initial version.
 Many general- and special-purpose messaging frameworks exist.
 It is beyond the scope of this paper to provide a comprehensive
 review, but we provide here a brief comparison between SAMP and
-some of the alternatives.
+a few of the alternatives.
 
-Several generic messaging frameworks share features with SAMP, 
+Several generic messaging frameworks share some features with SAMP, 
 for example AMQP, ZeroMQ, XPA, and D-Bus.
 To our knowledge, none
 satisfy SAMP's key requirements of an easily implementable
@@ -263,32 +266,46 @@ between a shared community of clients in quite the way required,
 though some of these systems could be used as transport layers on
 which future SAMP profiles could be built, in the same way
 that XML-RPC has been used in the existing profiles.
-Although SAMP's design is not specific to astronomy,
-it deliberately restricts some choices related to implementation
-and usage in a way that would not be
-appropriate for a generic messaging framework,
-to reduce the burden on client developers.
+SAMP deliberately restricts some choices related to implementation
+and usage to reduce the burden on client developers,
+so it is perhaps not surprising that generic messaging
+frameworks are not appropriate.
 
-A couple of messaging systems however merit further mention:
+One or two messaging systems however merit further mention.
 WAMP, the Web Application Messaging Protocol\footnote{\url{http://wamp.ws}}, 
 bears some striking architectural similarities to SAMP including 
 a combination of RPC and publish-subscribe messaging mediated by 
 a central component known in WAMP terminology as the Router.
 However, it does not address the issue of router discovery,
-so there is no prescribed way for clients to initiate communication;
-also, its development post-dated the publication of SAMP.
+so there is no prescribed way for clients to initiate communication.
+
+The Intent mechanism for inter-process communication that forms part of
+the Android operating system, while its target environment
+clearly differs from that of SAMP,
+shares with it some characteristics in terms of design and usage.
+For instance message semantics may be defined in a way which
+is either app-specific (``explicit'') or vague (``implicit''),
+in the latter case resulting in a
+user choice between candidate receiving apps.
+Furthermore, bulk data transfer is achieved
+using URIs to refer to an external data source
+rather than conveying the payload within the message.
+
 An example of a domain-specific messaging framework is
 the Systems Biology Workbench \citep{sbw},
 which is close in spirit to SAMP, enabling platform-independent 
 remote method invocation between components (known as ``modules'') 
 in the field of systems biology, based around the SBML data format.
+
 One point of difference is that
 the SBW infrastructure itself orchestrates the loading of
-modules to provide the required functionality;
+modules to provide the required functionality
+(the Android OS does something similar with Intents);
 in SAMP this choice of components is left to the user,
 though components like AppLauncher
 \citep{2012ASPC..461..379L} are available to
-layer this on top of the basic protocol where desired.
+layer automatic client startup on top of the basic protocol where desired.
+
 
 
 \section{Design for Interoperability} \label{sec:design}
@@ -1024,6 +1041,14 @@ This was intended as a provisional measure to be reviewed and
 modified as required, but, six years later, the need for a more
 formal process has not been apparent, and there are no current
 plans to modify this arrangement.
+
+At time of writing, a dozen MTypes are listed on the wiki,
+concerned with exchanging tables, row selections, FITS images, spectra,
+sky coordinates, VO Resource identifiers \citep{ACVOregistry},
+MOC sky coverage maps \citep{moc_std},
+bibcodes and one or two other items.
+The list has been fairly stable, though new entries and new
+optional parameters are sometimes added as required.
 
 \subsection{Existing Software} \label{sec:software}
 
