@@ -176,8 +176,11 @@ that arose from various VO initiatives
 proved important in practice
 as a platform for experimentation and agreement in this area.
 
-The external scripting capabilities of tools such as Aladin, SPLAT-VO
-and SAOImage ds9 already provided the option of tightly coupled master/slave
+The external scripting capabilities of tools such as
+Aladin \citep{2000A&AS..143...33B},
+SPLAT-VO \citep{ACVOsplat}
+and SAOImage ds9 \citep{2003ASPC..295..489J}
+already provided the option of tightly coupled master/slave
 control between pairs of applications, but did not lend themselves
 to the kind of cooperative interaction envisaged.
 The developers of Aladin experimented with Java interfaces designed
@@ -190,7 +193,9 @@ to a range of VO services using their choice of communication
 technology (XML-RPC, REST, Java RMI or JVM call).
 
 From this background, in 2005 discussions between developers of
-the AstroGrid, Aladin, VisIVO and TOPCAT software
+the AstroGrid, Aladin,
+VisIVO \citep{2007PASP..119..898C} and
+TOPCAT \citep{2005ASPC..347...29T} software
 in the context of the Euro-VO
 framework and the SC4DEVO workshop series led to the development
 of a new communication protocol PLASTIC:
@@ -272,7 +277,7 @@ so it is perhaps not surprising that generic messaging
 frameworks are not appropriate.
 
 One or two messaging systems however merit further mention.
-WAMP, the Web Application Messaging Protocol\footnote{\url{http://wamp.ws}}, 
+WAMP, the Web Application Messaging Protocol\footnote{\url{http://wamp.ws/}}, 
 bears some striking architectural similarities to SAMP including 
 a combination of RPC and publish-subscribe messaging mediated by 
 a central component known in WAMP terminology as the Router.
@@ -992,7 +997,7 @@ These typically provide functionality that only makes sense for
 a given tool, and make use of a suitably specific namespace,
 for instance {\tt script{\kdot}aladin{\kdot}send},
 which allows external applications to control Aladin
-\citep{2000A&AS..143...33B} by sending commands in its scripting language.
+by sending commands in its scripting language.
 
 Developers are also free to define their own MTypes for use privately
 or in some closed group with locally agreed conventions for documentation,
