@@ -4,8 +4,7 @@
 
 \usepackage{hyperref}
 \usepackage{graphicx}
-
-\usepackage{xcolor}  % for draft highlighting
+\usepackage{xcolor}
 
 \journal{Astronomy \& Computing}
 
@@ -32,7 +31,7 @@
 \address[google]{Google, USA}
 
 \begin{abstract}
-SAMP, the Simple Applications Messaging Protocol, is a
+SAMP, the Simple Application Messaging Protocol, is a
 hub-based communication standard for the exchange of data and control
 between participating client applications.
 It has been developed within the context of the Virtual Observatory
@@ -41,7 +40,9 @@ as a loosely integrated suite, and is now in use by many and varied
 desktop and web-based applications dealing with astronomical data.
 This paper reviews the requirements and design principles that led to
 SAMP's specification, provides a high-level description of the protocol,
-and discusses some of its common and possible future usage patterns.
+and discusses some of its common and possible future usage patterns,
+with particular attention to those factors that have aided its success
+in practice.
 \end{abstract}
 
 % from http://dl.acm.org/ccs_flat.cfm
@@ -53,9 +54,9 @@ publish-subscribe
 
 \end{frontmatter}
 
-\begin{flushright}
-{\tt \input{version}}
-\end{flushright}
+% \begin{flushright}
+% {\tt \input{version}}
+% \end{flushright}
 
 % use this in dot-delimited strings in place of a literal period.
 \newcommand{\kdot}{.\linebreak[0]}
@@ -146,14 +147,16 @@ in sufficient detail to understand the design decisions taken
 and their consequences,
 particularly from the point of view of the usage scenario
 outlined above.
-Section \ref{sec:context} outlines the evolution of SAMP from
-its predecessor PLASTIC,
+Section \ref{sec:context} traces the evolution of SAMP from
+its predecessor PLASTIC alongside a comparison with some
+alternative messaging systems,
 section \ref{sec:design} outlines some high-level design principles,
 section \ref{sec:protocol} presents a description of the protocol itself
 along with some of the thinking behind it,
 section \ref{sec:usage} considers its use in practice, and
 section \ref{sec:conclusion} concludes by reviewing the current status
-and possible future directions for SAMP.
+and possible future directions for SAMP,
+as well as the factors that have encouraged its uptake.
 For the complete and definitive details of the protocol,
 the reader is referred to the standard document itself \citep{samp_std}.
 
@@ -188,8 +191,8 @@ for two-way communications; these delivered some limited integration,
 but were restricted to applications operating within the same Java
 virtual machine.
 Meanwhile the Astro Runtime \citep{2007ASPC..376..571W} developed by
-AstroGrid was providing desktop tools with a simplified fa\c{c}ade
-to a range of VO services using their choice of communication
+AstroGrid was providing to desktop tools a simplified fa\c{c}ade
+for a range of VO services using their choice of communication
 technology (XML-RPC, REST, Java RMI or JVM call).
 
 From this background, in 2005 discussions between developers of
@@ -211,7 +214,7 @@ loosely-defined message semantics, and a pragmatic approach
 to providing ``good-enough'' communications.
 It proved popular with developers and users, % citation needed?
 and was incorporated into a dozen or so desktop applications,
-which could be used together effectively
+which could thereby be used together effectively
 in productive and sometimes novel ways.
 
 Interest in PLASTIC was however largely confined to Europe.
@@ -234,12 +237,13 @@ certain parts of the protocol were defined with reference to Java),
 simplification of message targetting,
 improved security arrangements
 (security is still rudimentary in SAMP, but opportunities for
-trivial client spoofing have been removed),
+trivial client spoofing were removed),
 modification of message names
 (now both human-readable and wildcard-able rather than opaque URIs),
 definition of all message parameters and return values as
 key-value pairs rather than ordered lists,
 use of fundamentally asynchronous messaging for robustness,
+restriction rather than proliferation of transport mechanisms,
 improved error reporting,
 and better extensibility.
 
@@ -274,7 +278,7 @@ that XML-RPC has been used in the existing profiles.
 SAMP deliberately restricts some choices related to implementation
 and usage to reduce the burden on client developers,
 so it is perhaps not surprising that generic messaging
-frameworks are not appropriate.
+frameworks are not, on their own, appropriate.
 
 One or two messaging systems however merit further mention.
 WAMP, the Web Application Messaging Protocol\footnote{\url{http://wamp.ws/}}, 
@@ -291,7 +295,7 @@ shares with it some characteristics in terms of design and usage.
 For instance message semantics may be defined in a way which
 is either app-specific (``explicit'') or vague (``implicit''),
 in the latter case resulting in a
-user choice between candidate receiving apps.
+user choice at runtime between candidate receiving apps.
 Furthermore, bulk data transfer is achieved
 using URIs to refer to an external data source
 rather than conveying the payload within the message.
@@ -301,7 +305,6 @@ the Systems Biology Workbench \citep{sbw},
 which is close in spirit to SAMP, enabling platform-independent 
 remote method invocation between components (known as ``modules'') 
 in the field of systems biology, based around the SBML data format.
-
 One point of difference is that
 the SBW infrastructure itself orchestrates the loading of
 modules to provide the required functionality
@@ -329,9 +332,9 @@ The definition of the protocol is not dependent on or biassed
 towards use of particular implementation languages or operating systems.
 
 Second, ease of adoption.
-Application authors have in practice found basic use of 
+Application authors have found basic use of 
 SAMP to require little implementation effort.
-In practice, availability of SAMP client libraries
+In practice, availability of easily deployable SAMP client libraries
 developed within the SAMP community
 for a number of implementation languages have been an important
 factor in this.
@@ -345,10 +348,13 @@ without needing to perform expert configuration
 (ideally, any explicit setup at all) or to understand the details
 of the messaging system.
 
-Third, extensibility.
+Third, extensibility and flexibility.
 Building into the system the capability to use it in ways
 driven by the requirements of the client tools rather than
 just those forseen by the standard authors increases its likely usefulness.
+The mechanisms for extensibility have been particularly designed
+to allow the introduction of new features without affecting existing ones,
+with the aim of reducing compatibility issues.
 
 Finally, the approach has been above all pragmatic, favouring
 the straightforward over the rigorous in cases of conflict.
@@ -362,9 +368,9 @@ rather than URIs with guaranteed private namespaces.
 Performance is easily good enough to handle exchange of short control
 messages on a timescale commensurate with user actions,
 but not for sustained throughput of high data volumes.
-(It may be noted that some, but not all,
+It may however be noted that most
 of these items could if required be ameliorated by future
-introduction of a new Profile with different transport characteristics).
+introduction of a new Profile with different transport characteristics.
 
 These principles and their application, in some cases informed
 by positive and negative lessons from the experience of PLASTIC,
@@ -387,7 +393,7 @@ Schematic of SAMP {\em Hub\/} and {\em clients\/} joined in a star topology.
 Black lines indicate clients {\em registered\/} with the hub.
 The red half-arrows indicate the progress of a message
 from a sending client (which may or may not be {\em callable\/})
-to a receiving client (which must be Callable),
+to a receiving client (which must be callable),
 passing through the Hub.
 }
 \end{figure}
@@ -404,10 +410,12 @@ Any client may optionally declare itself {\em callable\/},
 in which case it is also able to receive messages sent by others.
 Callability is optional since it is more difficult to
 achieve in client code, requiring some server-like capacity
-on top of the ability to invoke Hub services.
+on top of the ability to invoke Hub services,
+and simple actions like sending an image or table
+can be achieved without this requirement.
 In addition to declaring itself callable, a client wishing to
 receive messages must explicitly {\em subscribe}\footnote{
-   The term ``subscription'' derives from the ``publish/subscribe''
+   The term ``subscription'' derives from the ``publish-subscribe''
    messaging pattern.  It may however be more helpful to think of
    subscription as {\em declaring support for\/} a particular message type.
 }
@@ -491,7 +499,7 @@ However it is up to the sending client whether a response is
 required from any given message; in many cases the status flag
 is the only return value, and in this case a sending application
 may or may not wish to make the effort to pass this on to its user
-(``the table you sent was/was not successfully received'').
+(for instance ``the table you sent was/was not successfully received'').
 If the sender has no interest in the return value, it can use
 the ``send-and-forget'' ({\em notification\/}) pattern,
 with lower cost for sender, recipient and hub.
@@ -630,8 +638,8 @@ but not to {\tt spectrum{\kdot}load{\kdot}ssa-generic}.
 A client that has an image FITS file to send can then
 either query the Hub for those clients subscribed to the image load
 message and offer its user the choice of which one to target,
-or {\em broadcast} the image load message to the Hub, which will
-take care of forwarding it to all (and only) the image-capable clients.
+or request the Hub to {\em broadcast} the image load message
+to all (and only) the image-capable clients.
 
 \subsection{Type System} \label{sec:typeSystem}
 
@@ -696,7 +704,7 @@ Note also that the string type does not natively accommodate Unicode text,
 including XML.
 The restriction to 7-bit ASCII is driven by the requirement for use
 from non-Unicode-capable environments such as Fortran, IDL and
-and some shell scripts.
+some shell scripting languages.
 This has not caused known problems to date, but inability to handle
 Unicode text without additional encoding could prove awkward in
 some cases, and it may be necessary to revisit this restriction in a future
@@ -804,7 +812,7 @@ Section \ref{sec:examples} provides some concrete examples of it in action.
 
 SAMP's star topology means that a Hub (in most cases, exactly one Hub)
 must be running for any messaging to take place.
-Ideally, a independent Hub process would be started
+Ideally, an independent Hub process would be started
 as part of user session setup to ensure its constant availability.
 While this is quite possible and appropriate in some scenarios,
 even the minimal configuration required to establish it
@@ -927,7 +935,7 @@ For this kind of usage, the presence of a human in the loop
 to direct messages between clients as required by a particular workflow
 is an important part of the system,
 but the decisions required from the user are generally simple ones,
-i.e.\ which of a small list of clients to contact.
+e.g.\ which of a small list of clients to contact.
 
 For clients to interoperate as reliably as possible in this scenario,
 it is not sufficient just to agree on the notion of a table or an image
@@ -950,7 +958,8 @@ formats as possible, and well-behaved senders should send data
 in a format dependent on what is supported by the intended recipient.
 For applications willing to expend a lot of effort on interoperability 
 the work required at both ends increases rapidly with the number of
-available formats, and the rest may find themselves unable to
+available formats,
+while less conscientious implementations may find themselves unable to
 exchange data of essentially compatible types,
 or the community of SAMP clients may fragment into format-specific
 sub-communities unable to communicate globally.
@@ -988,7 +997,8 @@ using other available messaging systems.
 \subsection{MType Definition Process} \label{sec:mtypeProcess}
 
 A suitable collection of MTypes must not only exist but be known by
-potential message senders in order for useful messaging to take place.
+potential message senders -- which means the authors of the relevant
+software -- in order for useful messaging to take place.
 
 In the case of application-specific MTypes, the documentation of
 available MTypes and their definitions is clearly
@@ -1203,7 +1213,7 @@ interactive data acquisition and analysis applications,
 to deliver functionality approaching that of an
 integrated suite.
 This model is built on SAMP's combination of
-publish/subscribe messaging,
+publish-subscribe messaging,
 vague message semantics,
 and ease of adoption by both developers and users
 leading to widespread uptake.
@@ -1219,7 +1229,8 @@ Another possible scenario is inter-host messaging to
 support collaborative work;
 this option has been under consideration throughout SAMP's history
 and is possible using existing profiles,
-though it is somewhat cumbersome to set up and has so far not
+though in current configurations
+it is somewhat cumbersome to set up and has so far not
 received much user attention.
 Despite its development history, there is nothing in the protocol
 specific to either the Virtual Observatory or astronomy,
